@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Card, Form, Button, Alert, Spinner, Table, Badge } from 'react-bootstrap';
+import { Card, Form, Button, Alert, Spinner, Table, Badge, Modal } from 'react-bootstrap';
+import { FaEdit, FaTrashAlt, FaPencilAlt } from 'react-icons/fa';
 
 // Create a custom hook for departments data management
 const useDepartmentsData = () => {
@@ -241,96 +242,436 @@ const PositionCreation = ({ onPositionCreated }) => {
 };
 
 const DepartmentsList = ({ departments, loading, error, onRefresh }) => {
+    const [editMode, setEditMode] = useState(false);
+    const [editingDepartment, setEditingDepartment] = useState(null);
+    const [editName, setEditName] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [updateError, setUpdateError] = useState(null);
+
+    // Modal state for delete confirmation
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [departmentToDelete, setDepartmentToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState(null);
+
+    // Handle edit click
+    const handleEditClick = (dept) => {
+        setEditingDepartment(dept);
+        setEditName(dept.name);
+        setUpdateError(null);
+    };
+
+    // Handle save edit
+    const handleSaveEdit = async () => {
+        if (!editName.trim()) return;
+        
+        setIsUpdating(true);
+        setUpdateError(null);
+        
+        try {
+            await axios.put(`${import.meta.env.VITE_API_URL}/departments/${editingDepartment.id}`, {
+                name: editName
+            });
+            
+            // Reset editing state
+            setEditingDepartment(null);
+            setEditName('');
+            
+            // Refresh the list
+            onRefresh();
+        } catch (err) {
+            console.error('Error updating department:', err);
+            const errorMessage = err.response?.data?.message || 
+                               err.response?.data?.error || 
+                               `Server error (${err.response?.status}): ${err.response?.statusText}`;
+            setUpdateError(errorMessage || 'Failed to update department. Please try again.');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    // Handle delete click
+    const handleDeleteClick = (dept) => {
+        setDepartmentToDelete(dept);
+        setShowDeleteModal(true);
+        setDeleteError(null);
+    };
+
+    // Handle confirm delete
+    const handleConfirmDelete = async () => {
+        if (!departmentToDelete) return;
+        
+        setIsDeleting(true);
+        setDeleteError(null);
+        
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/departments/${departmentToDelete.id}`);
+            
+            // Close modal and reset state
+            setShowDeleteModal(false);
+            setDepartmentToDelete(null);
+            
+            // Refresh the list
+            onRefresh();
+        } catch (err) {
+            console.error('Error deleting department:', err);
+            const errorMessage = err.response?.data?.message || 
+                               err.response?.data?.error || 
+                               `Server error (${err.response?.status}): ${err.response?.statusText}`;
+            setDeleteError(errorMessage || 'Failed to delete department. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     return (
-        <Card className="shadow-sm mb-4">
-            <Card.Header as="h5" className="bg-secondary text-white d-flex justify-content-between align-items-center">
-                Existing Departments
-                <Button 
-                    variant="light" 
-                    size="sm" 
-                    onClick={onRefresh}
-                    disabled={loading}
-                >
-                    {loading ? <Spinner size="sm" animation="border" /> : 'Refresh'}
-                </Button>
-            </Card.Header>
-            <Card.Body>
-                {error && <Alert variant="danger">{error}</Alert>}
-                
-                {loading ? (
-                    <div className="text-center p-3">
-                        <Spinner animation="border" variant="primary" />
-                        <p className="mt-2">Loading departments...</p>
+        <>
+            <Card className="shadow-sm mb-4">
+                <Card.Header as="h5" className="bg-secondary text-white d-flex justify-content-between align-items-center">
+                    Existing Departments
+                    <div>
+                        <Button 
+                            variant="light" 
+                            size="sm" 
+                            className="me-2"
+                            onClick={() => setEditMode(!editMode)}
+                            title={editMode ? "Exit Edit Mode" : "Edit Departments"}
+                        >
+                            <FaPencilAlt /> {editMode ? "Done" : "Edit"}
+                        </Button>
+                        <Button 
+                            variant="light" 
+                            size="sm" 
+                            onClick={onRefresh}
+                            disabled={loading}
+                        >
+                            {loading ? <Spinner size="sm" animation="border" /> : 'Refresh'}
+                        </Button>
                     </div>
-                ) : departments.length > 0 ? (
-                    <Table striped hover responsive>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Department Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {departments.map(dept => (
-                                <tr key={dept.id}>
-                                    <td>{dept.id}</td>
-                                    <td>{dept.name}</td>
+                </Card.Header>
+                <Card.Body>
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    {updateError && <Alert variant="danger">{updateError}</Alert>}
+                    
+                    {loading ? (
+                        <div className="text-center p-3">
+                            <Spinner animation="border" variant="primary" />
+                            <p className="mt-2">Loading departments...</p>
+                        </div>
+                    ) : departments.length > 0 ? (
+                        <Table striped hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Department Name</th>
+                                    {editMode && <th className="text-center">Actions</th>}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                ) : (
-                    <Alert variant="info">No departments found. Create your first department above.</Alert>
-                )}
-            </Card.Body>
-        </Card>
+                            </thead>
+                            <tbody>
+                                {departments.map(dept => (
+                                    <tr key={dept.id}>
+                                        <td>{dept.id}</td>
+                                        <td>
+                                            {editingDepartment?.id === dept.id ? (
+                                                <Form.Control
+                                                    type="text"
+                                                    value={editName}
+                                                    onChange={(e) => setEditName(e.target.value)}
+                                                    size="sm"
+                                                    autoFocus
+                                                />
+                                            ) : dept.name}
+                                        </td>
+                                        {editMode && (
+                                            <td className="text-center">
+                                                {editingDepartment?.id === dept.id ? (
+                                                    <Button 
+                                                        variant="success" 
+                                                        size="sm"
+                                                        onClick={handleSaveEdit}
+                                                        disabled={isUpdating || !editName.trim()}
+                                                    >
+                                                        {isUpdating ? <Spinner size="sm" animation="border" /> : 'Save'}
+                                                    </Button>
+                                                ) : (
+                                                    <>
+                                                        <Button 
+                                                            variant="outline-primary" 
+                                                            size="sm" 
+                                                            className="me-2"
+                                                            onClick={() => handleEditClick(dept)}
+                                                            title="Edit Department"
+                                                        >
+                                                            <FaEdit />
+                                                        </Button>
+                                                        <Button 
+                                                            variant="outline-danger" 
+                                                            size="sm"
+                                                            onClick={() => handleDeleteClick(dept)}
+                                                            title="Delete Department"
+                                                        >
+                                                            <FaTrashAlt />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <Alert variant="info">No departments found. Create your first department above.</Alert>
+                    )}
+                </Card.Body>
+            </Card>
+            
+            {/* Delete Confirmation Modal */}
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                <Modal.Header>
+                    <Modal.Title>Confirm Delete</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {deleteError && <Alert variant="danger">{deleteError}</Alert>}
+                    <p>Are you sure you want to delete the department <strong>{departmentToDelete?.name}</strong>?</p>
+                    <p className="text-danger">This action cannot be undone.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button 
+                        variant="danger" 
+                        onClick={handleConfirmDelete}
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? (
+                            <>
+                                <Spinner as="span" animation="border" size="sm" className="me-2" />
+                                Deleting...
+                            </>
+                        ) : 'Delete Department'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 };
 
 const PositionsList = ({ positions, loading, error, onRefresh }) => {
+    const [editMode, setEditMode] = useState(false);
+    const [editingPosition, setEditingPosition] = useState(null);
+    const [editName, setEditName] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [updateError, setUpdateError] = useState(null);
+
+    // Modal state for delete confirmation
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [positionToDelete, setPositionToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState(null);
+
+    // Handle edit click
+    const handleEditClick = (position) => {
+        setEditingPosition(position);
+        setEditName(position.name);
+        setUpdateError(null);
+    };
+
+    // Handle save edit
+    const handleSaveEdit = async () => {
+        if (!editName.trim()) return;
+        
+        setIsUpdating(true);
+        setUpdateError(null);
+        
+        try {
+            await axios.put(`${import.meta.env.VITE_API_URL}/positions/${editingPosition.id}`, {
+                name: editName
+            });
+            
+            // Reset editing state
+            setEditingPosition(null);
+            setEditName('');
+            
+            // Refresh the list
+            onRefresh();
+        } catch (err) {
+            console.error('Error updating position:', err);
+            const errorMessage = err.response?.data?.message || 
+                               err.response?.data?.error || 
+                               `Server error (${err.response?.status}): ${err.response?.statusText}`;
+            setUpdateError(errorMessage || 'Failed to update position. Please try again.');
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    // Handle delete click
+    const handleDeleteClick = (position) => {
+        setPositionToDelete(position);
+        setShowDeleteModal(true);
+        setDeleteError(null);
+    };
+
+    // Handle confirm delete
+    const handleConfirmDelete = async () => {
+        if (!positionToDelete) return;
+        
+        setIsDeleting(true);
+        setDeleteError(null);
+        
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/positions/${positionToDelete.id}`);
+            
+            // Close modal and reset state
+            setShowDeleteModal(false);
+            setPositionToDelete(null);
+            
+            // Refresh the list
+            onRefresh();
+        } catch (err) {
+            console.error('Error deleting position:', err);
+            const errorMessage = err.response?.data?.message || 
+                               err.response?.data?.error || 
+                               `Server error (${err.response?.status}): ${err.response?.statusText}`;
+            setDeleteError(errorMessage || 'Failed to delete position. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     return (
-        <Card className="shadow-sm mb-4">
-            <Card.Header as="h5" className="bg-secondary text-white d-flex justify-content-between align-items-center">
-                Existing Positions
-                <Button 
-                    variant="light" 
-                    size="sm" 
-                    onClick={onRefresh}
-                    disabled={loading}
-                >
-                    {loading ? <Spinner size="sm" animation="border" /> : 'Refresh'}
-                </Button>
-            </Card.Header>
-            <Card.Body>
-                {error && <Alert variant="danger">{error}</Alert>}
-                
-                {loading ? (
-                    <div className="text-center p-3">
-                        <Spinner animation="border" variant="primary" />
-                        <p className="mt-2">Loading positions...</p>
+        <>
+            <Card className="shadow-sm mb-4">
+                <Card.Header as="h5" className="bg-secondary text-white d-flex justify-content-between align-items-center">
+                    Existing Positions
+                    <div>
+                        <Button 
+                            variant="light" 
+                            size="sm" 
+                            className="me-2"
+                            onClick={() => setEditMode(!editMode)}
+                            title={editMode ? "Exit Edit Mode" : "Edit Positions"}
+                        >
+                            <FaPencilAlt /> {editMode ? "Done" : "Edit"}
+                        </Button>
+                        <Button 
+                            variant="light" 
+                            size="sm" 
+                            onClick={onRefresh}
+                            disabled={loading}
+                        >
+                            {loading ? <Spinner size="sm" animation="border" /> : 'Refresh'}
+                        </Button>
                     </div>
-                ) : positions.length > 0 ? (
-                    <Table striped hover responsive>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Position Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {positions.map(position => (
-                                <tr key={position.id}>
-                                    <td>{position.id}</td>
-                                    <td>{position.name}</td>
+                </Card.Header>
+                <Card.Body>
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    {updateError && <Alert variant="danger">{updateError}</Alert>}
+                    
+                    {loading ? (
+                        <div className="text-center p-3">
+                            <Spinner animation="border" variant="primary" />
+                            <p className="mt-2">Loading positions...</p>
+                        </div>
+                    ) : positions.length > 0 ? (
+                        <Table striped hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Position Name</th>
+                                    {editMode && <th className="text-center">Actions</th>}
                                 </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                ) : (
-                    <Alert variant="info">No positions found. Create your first position above.</Alert>
-                )}
-            </Card.Body>
-        </Card>
+                            </thead>
+                            <tbody>
+                                {positions.map(position => (
+                                    <tr key={position.id}>
+                                        <td>{position.id}</td>
+                                        <td>
+                                            {editingPosition?.id === position.id ? (
+                                                <Form.Control
+                                                    type="text"
+                                                    value={editName}
+                                                    onChange={(e) => setEditName(e.target.value)}
+                                                    size="sm"
+                                                    autoFocus
+                                                />
+                                            ) : position.name}
+                                        </td>
+                                        {editMode && (
+                                            <td className="text-center">
+                                                {editingPosition?.id === position.id ? (
+                                                    <Button 
+                                                        variant="success" 
+                                                        size="sm"
+                                                        onClick={handleSaveEdit}
+                                                        disabled={isUpdating || !editName.trim()}
+                                                    >
+                                                        {isUpdating ? <Spinner size="sm" animation="border" /> : 'Save'}
+                                                    </Button>
+                                                ) : (
+                                                    <>
+                                                        <Button 
+                                                            variant="outline-primary" 
+                                                            size="sm" 
+                                                            className="me-2"
+                                                            onClick={() => handleEditClick(position)}
+                                                            title="Edit Position"
+                                                        >
+                                                            <FaEdit />
+                                                        </Button>
+                                                        <Button 
+                                                            variant="outline-danger" 
+                                                            size="sm"
+                                                            onClick={() => handleDeleteClick(position)}
+                                                            title="Delete Position"
+                                                        >
+                                                            <FaTrashAlt />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <Alert variant="info">No positions found. Create your first position above.</Alert>
+                    )}
+                </Card.Body>
+            </Card>
+            
+            {/* Delete Confirmation Modal */}
+            <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+                <Modal.Header>
+                    <Modal.Title>Confirm Delete</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {deleteError && <Alert variant="danger">{deleteError}</Alert>}
+                    <p>Are you sure you want to delete the position <strong>{positionToDelete?.name}</strong>?</p>
+                    <p className="text-danger">This action cannot be undone.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                        Cancel
+                    </Button>
+                    <Button 
+                        variant="danger" 
+                        onClick={handleConfirmDelete}
+                        disabled={isDeleting}
+                    >
+                        {isDeleting ? (
+                            <>
+                                <Spinner as="span" animation="border" size="sm" className="me-2" />
+                                Deleting...
+                            </>
+                        ) : 'Delete Position'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 };
 
