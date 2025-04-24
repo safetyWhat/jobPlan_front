@@ -3,12 +3,14 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import JobCreationCard from './jobCreationCard'
 import Jobs from './jobs'
-import { AdminPage, DepartmentCreation, PositionCreation, DepartmentsList, PositionsList } from './employeeCreation'
+import { DeptPosition, DepartmentCreation, PositionCreation, DepartmentsList, PositionsList, EmployeeManagement } from './employeeCreation'
+import { FaEdit, FaTrashAlt, FaPencilAlt } from 'react-icons/fa';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <AdminPage />
-    <JobCreationCard />
-    <Jobs />
+    <DeptPosition />
+    <EmployeeManagement />
+    {/*<JobCreationCard />
+    <Jobs /> */}
   </StrictMode>,
 )

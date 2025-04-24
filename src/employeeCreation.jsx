@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Form, Button, Alert, Spinner, Table, Badge, Modal } from 'react-bootstrap';
-import { FaEdit, FaTrashAlt, FaPencilAlt } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaPencilAlt, FaRedo, FaSave } from 'react-icons/fa';
 
 // Create a custom hook for departments data management
 const useDepartmentsData = () => {
@@ -134,6 +134,8 @@ const DepartmentCreation = ({ onDepartmentCreated }) => {
                             type="submit"
                             className="mt-3"
                             disabled={isLoading || !formData.name}
+                            aria-label='Create Department'
+                            title='Create Department'
                         >
                             {isLoading ? (
                                 <>
@@ -226,6 +228,8 @@ const PositionCreation = ({ onPositionCreated }) => {
                             type="submit"
                             className="mt-3"
                             disabled={isLoading || !formData.name}
+                            aria-label='Create Position'
+                            title='Create Position'
                         >
                             {isLoading ? (
                                 <>
@@ -336,16 +340,19 @@ const DepartmentsList = ({ departments, loading, error, onRefresh }) => {
                             className="me-2"
                             onClick={() => setEditMode(!editMode)}
                             title={editMode ? "Exit Edit Mode" : "Edit Departments"}
+                            aria-label={editMode ? "Exit Edit Mode" : "Edit Departments"}
                         >
-                            <FaPencilAlt /> {editMode ? "Done" : "Edit"}
+                            {editMode ? <FaSave /> : <FaPencilAlt />}
                         </Button>
                         <Button 
                             variant="light" 
                             size="sm" 
                             onClick={onRefresh}
                             disabled={loading}
+                            aria-label='Refresh Departments'
+                            title='Refresh Departments'
                         >
-                            {loading ? <Spinner size="sm" animation="border" /> : 'Refresh'}
+                            {loading ? <Spinner size="sm" animation="border" /> : <FaRedo />}
                         </Button>
                     </div>
                 </Card.Header>
@@ -390,8 +397,10 @@ const DepartmentsList = ({ departments, loading, error, onRefresh }) => {
                                                         size="sm"
                                                         onClick={handleSaveEdit}
                                                         disabled={isUpdating || !editName.trim()}
+                                                        title='Save Changes'
+                                                        aria-label='Save Changes'
                                                     >
-                                                        {isUpdating ? <Spinner size="sm" animation="border" /> : 'Save'}
+                                                        {isUpdating ? <Spinner size="sm" animation="border" /> : <FaSave />}
                                                     </Button>
                                                 ) : (
                                                     <>
@@ -401,6 +410,7 @@ const DepartmentsList = ({ departments, loading, error, onRefresh }) => {
                                                             className="me-2"
                                                             onClick={() => handleEditClick(dept)}
                                                             title="Edit Department"
+                                                            aria-label="Edit Department"
                                                         >
                                                             <FaEdit />
                                                         </Button>
@@ -409,6 +419,7 @@ const DepartmentsList = ({ departments, loading, error, onRefresh }) => {
                                                             size="sm"
                                                             onClick={() => handleDeleteClick(dept)}
                                                             title="Delete Department"
+                                                            aria-label="Delete Department"
                                                         >
                                                             <FaTrashAlt />
                                                         </Button>
@@ -437,13 +448,20 @@ const DepartmentsList = ({ departments, loading, error, onRefresh }) => {
                     <p className="text-danger">This action cannot be undone.</p>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                    <Button 
+                        variant="secondary"
+                        onClick={() => setShowDeleteModal(false)}
+                        title='Cancel delete department'
+                        aria-label='Cancel delete department'
+                    >
                         Cancel
                     </Button>
                     <Button 
                         variant="danger" 
                         onClick={handleConfirmDelete}
                         disabled={isDeleting}
+                        title='Delete department'
+                        aria-label='Delete department'
                     >
                         {isDeleting ? (
                             <>
@@ -553,16 +571,19 @@ const PositionsList = ({ positions, loading, error, onRefresh }) => {
                             className="me-2"
                             onClick={() => setEditMode(!editMode)}
                             title={editMode ? "Exit Edit Mode" : "Edit Positions"}
+                            aria-label={editMode ? "Exit Edit Mode" : "Edit Positions"}
                         >
-                            <FaPencilAlt /> {editMode ? "Done" : "Edit"}
+                            {editMode ? <FaSave /> : <FaPencilAlt />}
                         </Button>
                         <Button 
                             variant="light" 
                             size="sm" 
                             onClick={onRefresh}
                             disabled={loading}
+                            aria-label='Refresh Positions'
+                            title='Refresh Positions'
                         >
-                            {loading ? <Spinner size="sm" animation="border" /> : 'Refresh'}
+                            {loading ? <Spinner size="sm" animation="border" /> : <FaRedo />}
                         </Button>
                     </div>
                 </Card.Header>
@@ -607,8 +628,10 @@ const PositionsList = ({ positions, loading, error, onRefresh }) => {
                                                         size="sm"
                                                         onClick={handleSaveEdit}
                                                         disabled={isUpdating || !editName.trim()}
+                                                        title='Save Changes'
+                                                        aria-label='Save Changes'
                                                     >
-                                                        {isUpdating ? <Spinner size="sm" animation="border" /> : 'Save'}
+                                                        {isUpdating ? <Spinner size="sm" animation="border" /> : <FaSave />}
                                                     </Button>
                                                 ) : (
                                                     <>
@@ -618,6 +641,7 @@ const PositionsList = ({ positions, loading, error, onRefresh }) => {
                                                             className="me-2"
                                                             onClick={() => handleEditClick(position)}
                                                             title="Edit Position"
+                                                            aria-label="Edit Position"
                                                         >
                                                             <FaEdit />
                                                         </Button>
@@ -626,6 +650,7 @@ const PositionsList = ({ positions, loading, error, onRefresh }) => {
                                                             size="sm"
                                                             onClick={() => handleDeleteClick(position)}
                                                             title="Delete Position"
+                                                            aria-label="Delete Position"
                                                         >
                                                             <FaTrashAlt />
                                                         </Button>
@@ -654,13 +679,20 @@ const PositionsList = ({ positions, loading, error, onRefresh }) => {
                     <p className="text-danger">This action cannot be undone.</p>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setShowDeleteModal(false)}
+                        title='Cancel delete position'
+                        aria-label='Cancel delete position'
+                    >
                         Cancel
                     </Button>
                     <Button 
                         variant="danger" 
                         onClick={handleConfirmDelete}
                         disabled={isDeleting}
+                        title='Delete position'
+                        aria-label='Delete position'
                     >
                         {isDeleting ? (
                             <>
@@ -675,8 +707,405 @@ const PositionsList = ({ positions, loading, error, onRefresh }) => {
     );
 };
 
+const EmployeeCreationModal = ({ show, onHide, departments, positions }) => {
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        departmentId: '',
+        positionId: '',
+        hiredAt: '',
+        wage: ''
+    });
+    
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
+    
+    // Reset the form when the modal is opened/closed
+    useEffect(() => {
+        if (show) {
+            setFormData({
+                firstName: '',
+                lastName: '',
+                phone: '',
+                email: '',
+                departmentId: '',
+                positionId: '',
+                hiredAt: '',
+                wage: ''
+            });
+            setError(null);
+            setSuccess(false);
+        }
+    }, [show]);
+    
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        
+        // Convert departmentId and positionId to numbers, all others remain strings
+        const processedValue = (name === 'departmentId' || name === 'positionId') && value 
+            ? parseInt(value, 10) 
+            : value;
+            
+        setFormData(prevData => ({
+            ...prevData,
+            [name]: processedValue
+        }));
+    };
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+        setSuccess(false);
+    
+        try {
+            // Format wage as a number
+            const wageAsNumber = formData.wage ? parseFloat(formData.wage) : null;
+            
+            // Format the hiredAt date to ISO-8601 if it exists
+            const formattedDate = formData.hiredAt 
+                ? new Date(formData.hiredAt).toISOString() 
+                : null;
+            
+            const dataToSubmit = {
+                ...formData,
+                hiredAt: formattedDate,
+                wage: wageAsNumber
+            };
+        
+            console.log('Submitting employee data:', dataToSubmit);
+            
+            await axios.post(`${import.meta.env.VITE_API_URL}/employees`, dataToSubmit);
+            setSuccess(true);
+            
+            // Clear form after successful submission
+            setFormData({
+                firstName: '',
+                lastName: '',
+                phone: '',
+                email: '',
+                departmentId: '',
+                positionId: '',
+                hiredAt: '',
+                wage: ''
+            });
+            
+            // Close modal after short delay to show success message
+            setTimeout(() => {
+                if (success) onHide();
+            }, 1500);
+            
+        } catch (err) {
+            console.error('Error creating employee:', err);
+            const errorMessage = err.response?.data?.message || 
+                               err.response?.data?.error || 
+                               `Server error (${err.response?.status}): ${err.response?.statusText}`;
+            setError(errorMessage || 'Failed to create employee. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    return (
+        <Modal show={show} onHide={onHide} size="lg">
+            <Modal.Header>
+                <Modal.Title>Add New Employee</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                {error && <Alert variant="danger">{error}</Alert>}
+                {success && <Alert variant="success">Employee created successfully!</Alert>}
+                
+                <Form onSubmit={handleSubmit}>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>First Name <span className="text-danger">*</span></Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Form.Group>
+                        </div>
+                        
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Last Name <span className="text-danger">*</span></Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </Form.Group>
+                        </div>
+                    </div>
+                    
+                    <div className="row">
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Phone</Form.Label>
+                                <Form.Control
+                                    type="tel"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </div>
+                        
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Email</Form.Label>
+                                <Form.Control
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </div>
+                    </div>
+                    
+                    <div className="row">
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Department <span className="text-danger">*</span></Form.Label>
+                                <Form.Select
+                                    name="departmentId"
+                                    value={formData.departmentId}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select Department</option>
+                                    {departments.map(dept => (
+                                        <option key={dept.id} value={dept.id}>
+                                            {dept.name}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </div>
+                        
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Position <span className="text-danger">*</span></Form.Label>
+                                <Form.Select
+                                    name="positionId"
+                                    value={formData.positionId}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select Position</option>
+                                    {positions.map(position => (
+                                        <option key={position.id} value={position.id}>
+                                            {position.name}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </Form.Group>
+                        </div>
+                    </div>
+                    
+                    <div className="row">
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Date of Hire</Form.Label>
+                                <Form.Control
+                                    type="date"
+                                    name="hiredAt"
+                                    value={formData.hiredAt}
+                                    onChange={handleChange}
+                                />
+                            </Form.Group>
+                        </div>
+                        
+                        <div className="col-md-6">
+                            <Form.Group className="mb-3">
+                                <Form.Label>Hourly Wage ($)</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    name="wage"
+                                    value={formData.wage}
+                                    onChange={handleChange}
+                                    step="0.01"
+                                    min="0"
+                                />
+                            </Form.Group>
+                        </div>
+                    </div>
+                    
+                    <div className="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <Button 
+                            variant="secondary" 
+                            onClick={onHide}
+                            disabled={isLoading}
+                            title="Cancel"
+                            aria-label="Cancel"
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            variant="primary" 
+                            type="submit"
+                            disabled={isLoading || !formData.firstName || !formData.lastName || !formData.departmentId || !formData.positionId}
+                            title="Create Employee"
+                            aria-label="Create Employee"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <Spinner as="span" animation="border" size="sm" className="me-2" />
+                                    Creating...
+                                </>
+                            ) : 'Create Employee'}
+                        </Button>
+                    </div>
+                </Form>
+            </Modal.Body>
+        </Modal>
+    );
+};
+
+const EmployeeManagement = () => {
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [employees, setEmployees] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    
+    // Use the existing hooks to get departments and positions data
+    const { departments } = useDepartmentsData();
+    const { positions } = usePositionsData();
+    
+    // Fetch employees list
+    const fetchEmployees = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/employees`);
+            setEmployees(response.data.data || response.data); // Handle both data structures
+            setError(null);
+            console.log('Fetched employees:', response.data);
+        } catch (err) {
+            console.error('Error fetching employees:', err);
+            setError('Failed to load employees. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // Fetch employees on component mount
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
+    
+    // Helper function to get department name from ID
+    const getDepartmentName = (departmentId) => {
+        const department = departments.find(d => d.id === departmentId);
+        return department ? department.name : 'Unknown Department';
+    };
+    
+    // Helper function to get position name from ID
+    const getPositionName = (positionId) => {
+        const position = positions.find(p => p.id === positionId);
+        return position ? position.name : 'Unknown Position';
+    };
+    
+    // Format date for display
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Not specified';
+        return new Date(dateString).toLocaleDateString();
+    };
+    
+    return (
+        <div className="container mt-4">
+            <Card className="shadow-sm mb-4">
+                <Card.Header as="h5" className="bg-primary text-white d-flex justify-content-between align-items-center">
+                    Employee Management
+                    <div>
+                        <Button 
+                            variant="light"
+                            size="sm"
+                            onClick={() => setShowCreateModal(true)}
+                            title="Add New Employee"
+                            aria-label="Add New Employee"
+                        >
+                            Add Employee
+                        </Button>
+                        <Button 
+                            variant="light" 
+                            size="sm" 
+                            className="ms-2"
+                            onClick={fetchEmployees}
+                            disabled={loading}
+                            title="Refresh Employees List"
+                            aria-label="Refresh Employees List"
+                        >
+                            {loading ? <Spinner size="sm" animation="border" /> : <FaRedo />}
+                        </Button>
+                    </div>
+                </Card.Header>
+                <Card.Body>
+                    {error && <Alert variant="danger">{error}</Alert>}
+                    
+                    {loading ? (
+                        <div className="text-center p-3">
+                            <Spinner animation="border" variant="primary" />
+                            <p className="mt-2">Loading employees...</p>
+                        </div>
+                    ) : employees.length > 0 ? (
+                        <Table striped hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Department</th>
+                                    <th>Position</th>
+                                    <th>Contact</th>
+                                    <th>Hired</th>
+                                    <th>Wage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {employees.map(employee => (
+                                    <tr key={employee.id}>
+                                        <td>{employee.id}</td>
+                                        <td>{`${employee.firstName} ${employee.lastName}`}</td>
+                                        <td>{getDepartmentName(employee.departmentId)}</td>
+                                        <td>{getPositionName(employee.positionId)}</td>
+                                        <td>
+                                            {employee.email && <div>{employee.email}</div>}
+                                            {employee.phone && <div>{employee.phone}</div>}
+                                        </td>
+                                        <td>{formatDate(employee.hiredAt)}</td>
+                                        <td>${employee.wage ? employee.wage.toFixed(2) : 'N/A'}/hr</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <Alert variant="info">No employees found. Add your first employee using the button above.</Alert>
+                    )}
+                </Card.Body>
+            </Card>
+            
+            {/* Employee Creation Modal */}
+            <EmployeeCreationModal 
+                show={showCreateModal}
+                onHide={() => setShowCreateModal(false)}
+                departments={departments}
+                positions={positions}
+            />
+        </div>
+    );
+};
+
 // Main component to combine everything
-const AdminPage = () => {
+const DeptPosition = () => {
     // Use the custom hooks to manage data
     const { departments, loading: deptLoading, error: deptError, fetchDepartments } = useDepartmentsData();
     const { positions, loading: posLoading, error: posError, fetchPositions } = usePositionsData();
@@ -707,4 +1136,12 @@ const AdminPage = () => {
     );
 };
 
-export { AdminPage, DepartmentCreation, PositionCreation, DepartmentsList, PositionsList };
+export { 
+    DeptPosition, 
+    DepartmentCreation, 
+    PositionCreation, 
+    DepartmentsList, 
+    PositionsList,
+    EmployeeManagement,
+    EmployeeCreationModal
+};
