@@ -4,13 +4,15 @@ import './index.css'
 import JobCreationCard from './jobCreationCard'
 import Jobs from './jobs'
 import { DeptPosition, DepartmentCreation, PositionCreation, DepartmentsList, PositionsList, EmployeeManagement } from './employeeCreation'
+import CustomerManagement from './customerCreation'
 import { FaEdit, FaTrashAlt, FaPencilAlt } from 'react-icons/fa';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <DeptPosition />
+    <CustomerManagement />
+    {/*<DeptPosition />
     <EmployeeManagement />
-    {/*<JobCreationCard />
+    <JobCreationCard />
     <Jobs /> */}
   </StrictMode>,
 )
