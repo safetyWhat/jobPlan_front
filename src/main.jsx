@@ -11,8 +11,8 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <CustomerManagement />
     {/*<DeptPosition />
-    <EmployeeManagement />
+    <EmployeeManagement />*/}
     <JobCreationCard />
-    <Jobs /> */}
+    <Jobs /> 
   </StrictMode>,
 )

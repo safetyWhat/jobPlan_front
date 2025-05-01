@@ -33,7 +33,6 @@ const JobCard = ({ job }) => {
           <small className="text-muted">{job.jobNum || 'No Job Number'}</small>
         </div>
         <div className="d-flex align-items-center">
-          {job.active && <Badge bg="success" className="me-2">Active</Badge>}
           {expanded ? <FaChevronUp /> : <FaChevronDown />}
         </div>
       </Card.Header>
@@ -79,12 +78,12 @@ const JobCard = ({ job }) => {
             </Col>
           </Row>
 
-          {(job.driveTime || job.driveTimeType) && (
+          {(job.driveTime) && (
             <Row className="mb-3">
               <Col>
                 <h6>Drive Time</h6>
                 <p>
-                  {job.driveTime ? `${job.driveTime} ${job.driveTimeType?.name || ''}` : 'Not specified'}
+                  {job.driveTime}
                 </p>
               </Col>
             </Row>
