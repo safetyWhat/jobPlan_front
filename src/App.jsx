@@ -2,8 +2,8 @@ import { Routes, Route } from "react-router";
 import Navbar from './components/navbar';
 import Jobs from './pages/jobs';
 import EmployeeManagement from './pages/employees';
-import Customers from './pages/customers';
-import DeptPositions from './pages/deptPositions';
+import CustomerManagement from './pages/customers';
+import DeptPosition from './pages/deptPositions';
 
 function App() {
   return (
@@ -13,8 +13,8 @@ function App() {
         <Routes>
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/employee" element={<EmployeeManagement />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/deptPositions" element={<DeptPositions />} />
+          <Route path="/customers" element={<CustomerManagement />} />
+          <Route path="/deptPositions" element={<DeptPosition />} />
         </Routes>
       </div>
     </>

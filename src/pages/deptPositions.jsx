@@ -696,4 +696,4 @@ const DeptPosition = () => {
     );
 };
 
-export default DeptPositions;
+export default DeptPosition;
