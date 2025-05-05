@@ -1,8 +1,10 @@
-function Jobs () {
+import React from 'react';
+import JobManagement from '../components/jobCard';
+
+function Jobs() {
   return (
-    <div>
-      <h1>Jobs</h1>
-      <p>List of jobs will be displayed here.</p>
+    <div className="container">
+      <JobManagement />
     </div>
   );
 }
