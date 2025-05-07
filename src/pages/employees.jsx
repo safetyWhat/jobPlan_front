@@ -5,15 +5,6 @@ import usePositionsData from '../hooks/usePositionsData';
 import { Card, Table, Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { FaEdit, FaTrashAlt, FaRedo } from 'react-icons/fa';
 
-function Employees() {
-  return (
-    <div>
-      <h1>Employees</h1>
-      <p>List of employees will be displayed here.</p>
-    </div>
-  );
-}
-
 const EmployeeManagement = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
