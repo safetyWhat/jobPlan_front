@@ -4,6 +4,7 @@ import Jobs from './pages/jobs';
 import EmployeeManagement from './pages/employees';
 import CustomerManagement from './pages/customers';
 import DeptPosition from './pages/deptPositions';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
