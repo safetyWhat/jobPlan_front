@@ -13,6 +13,7 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [showWages, setShowWages] = useState(false);
     
     // Delete modal state
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -137,7 +138,17 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
                                 <th>Position</th>
                                 <th>Contact</th>
                                 <th>Hired</th>
-                                <th>Wage</th>
+                                <th>
+                                    Wage
+                                    <Button
+                                        variant="link"
+                                        size="sm"
+                                        className="ms-2 p-0"
+                                        onClick={() => setShowWages(!showWages)}
+                                    >
+                                        {showWages ? '🙈' : '👁️'}
+                                    </Button>
+                                </th>
                                 <th className="text-center">Actions</th>
                             </tr>
                         </thead>
@@ -153,7 +164,12 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
                                         {employee.phone && <div>{employee.phone}</div>}
                                     </td>
                                     <td>{formatDate(employee.hiredAt)}</td>
-                                    <td>${employee.wage ? employee.wage.toFixed(2) : 'N/A'}/hr</td>
+                                    <td>
+                                        {showWages 
+                                            ? `$${employee.wage ? employee.wage.toFixed(2) : 'N/A'}/hr`
+                                            : '****'
+                                        }
+                                    </td>
                                     <td className="text-center">
                                         <Button 
                                             variant="outline-primary" 
