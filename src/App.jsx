@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Routes, Route } from "react-router";
-import { Container, Row, Col, Navbar as BootstrapNavbar } from 'react-bootstrap';
+import { Container, Row, Col, Navbar as BootstrapNavbar, Button } from 'react-bootstrap';
+import { FaBars } from 'react-icons/fa';
 import Navbar from './components/navbar';
 import Jobs from './pages/jobs';
 import EmployeeManagement from './pages/employees';
@@ -8,11 +10,20 @@ import DeptPosition from './pages/deptPositions';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
+  const [showNavbar, setShowNavbar] = useState(true);
+
   return (
     <div className="vh-100 d-flex flex-column">
       {/* Header */}
       <BootstrapNavbar bg="dark" variant="dark" className="p-3">
         <Container fluid>
+          <Button
+            variant="outline-light"
+            className="me-2 d-flex align-items-center"
+            onClick={() => setShowNavbar(!showNavbar)}
+          >
+            <FaBars />
+          </Button>
           <BootstrapNavbar.Brand>Job Plan</BootstrapNavbar.Brand>
         </Container>
       </BootstrapNavbar>
@@ -20,13 +31,17 @@ function App() {
       {/* Main content area with sidebar */}
       <Container fluid className="flex-grow-1">
         <Row className="h-100">
-          {/* Sidebar Navigation */}
-          <Col md={3} lg={2} className="bg-light p-0 min-vh-100">
+          {/* Sidebar Navigation with toggle */}
+          <Col 
+            md={2} 
+            className={`bg-light p-0 min-vh-100 flex-shrink-0 transition-width ${showNavbar ? 'd-block' : 'd-none'}`}
+            style={{ width: showNavbar ? '175px' : '0' }}
+          >
             <Navbar />
           </Col>
 
           {/* Main Content Area */}
-          <Col md={9} lg={10} className="p-4">
+          <Col className="p-4">
             <Routes>
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/employee" element={<EmployeeManagement />} />

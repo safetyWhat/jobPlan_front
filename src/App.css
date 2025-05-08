@@ -7,7 +7,26 @@
   background-color: #e9ecef;
 }
 
-.nav-link.active {
+/* Change this selector to match react-router's active class */
+.nav-link[class*="active"] {
   background-color: #0d6efd;
   color: white !important;
+}
+
+.transition-width {
+  transition: width 0.3s ease-in-out;
+}
+
+/* Add styles for the toggle button */
+.navbar-toggle {
+  padding: 0.25rem 0.75rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+}
+
+.navbar-toggle:hover {
+  color: rgba(255, 255, 255, 0.75);
 }

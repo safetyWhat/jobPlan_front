@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Card, Table, Button, Modal, Alert, Spinner } from 'react-bootstrap';
 import { FaEdit, FaTrashAlt, FaRedo, FaPlus } from 'react-icons/fa';
@@ -6,7 +6,7 @@ import EmployeeFormModal from './employeeEdit';
 import useDepartmentsData from '../hooks/useDepartmentsData';
 import usePositionsData from '../hooks/usePositionsData';
 
-const EmployeeManagement = () => {
+const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -24,11 +24,15 @@ const EmployeeManagement = () => {
     const { departments } = useDepartmentsData();
     const { positions } = usePositionsData();
     
-    const fetchEmployees = async () => {
+    const fetchEmployees = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/employees`);
-            setEmployees(response.data.data || response.data);
+            if (filteredEmployees) {
+                setEmployees(filteredEmployees);
+            } else {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/employees`);
+                setEmployees(response.data.data || response.data);
+            }
             setError(null);
         } catch (err) {
             console.error('Error fetching employees:', err);
@@ -36,11 +40,16 @@ const EmployeeManagement = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filteredEmployees]);
     
     useEffect(() => {
-        fetchEmployees();
-    }, []);
+        if (filteredEmployees) {
+            setEmployees(filteredEmployees);
+            setLoading(false);
+        } else {
+            fetchEmployees();
+        }
+    }, [filteredEmployees, fetchEmployees]);
 
     const handleEdit = (employee) => {
         setSelectedEmployee(employee);
@@ -113,7 +122,7 @@ const EmployeeManagement = () => {
             <Card.Body>
                 {error && <Alert variant="danger">{error}</Alert>}
                 
-                {loading ? (
+                {(loading || isFiltering) ? (
                     <div className="text-center p-3">
                         <Spinner animation="border" variant="primary" />
                         <p className="mt-2">Loading employees...</p>
