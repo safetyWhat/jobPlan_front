@@ -15,7 +15,7 @@ const EmployeeFilters = ({ onFilterChange, onClearFilters }) => {
 		const { name, value } = e.target;
 		const newFilters = {
 			...filters,
-			[name]: value,
+			[name]: value ? parseInt(value) : "", // Convert to number for non-empty values
 		};
 		setFilters(newFilters);
 		onFilterChange(newFilters);

@@ -6,6 +6,10 @@ import EmployeeFilters from "../components/employeeFilters";
 function Employees() {
 	const [filteredEmployees, setFilteredEmployees] = useState([]);
 	const [isFiltering, setIsFiltering] = useState(false);
+	const [currentFilters, setCurrentFilters] = useState({
+		departmentId: "",
+		positionId: "",
+	});
 
 	const fetchAllEmployees = async () => {
 		try {
@@ -25,10 +29,14 @@ function Employees() {
 	useEffect(() => {
 		fetchAllEmployees();
 	}, []);
+	useEffect(() => {
+		console.log("Employees updated:", filteredEmployees);
+	}, [filteredEmployees]);
 
 	const handleFilterChange = async (filters) => {
 		try {
 			setIsFiltering(true);
+			setCurrentFilters(filters);
 
 			// Build query string based on active filters
 			const queryParams = [];
@@ -41,7 +49,6 @@ function Employees() {
 				queryParams.length > 0
 					? `/filter?${queryParams.join("&")}`
 					: "";
-
 			const response = await axios.get(
 				`${import.meta.env.VITE_API_URL}/employees${queryString}`,
 			);
@@ -54,6 +61,11 @@ function Employees() {
 		}
 	};
 
+	const handleEmployeeChange = () => {
+		// Refresh while maintaining current filters
+		handleFilterChange(currentFilters);
+	};
+
 	return (
 		<div className="container">
 			<EmployeeFilters
@@ -63,6 +75,7 @@ function Employees() {
 			<EmployeeManagement
 				employees={filteredEmployees}
 				isFiltering={isFiltering}
+				onEmployeeChange={handleEmployeeChange}
 			/>
 		</div>
 	);

@@ -160,6 +160,7 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 	const handleCustomerSearch = (e) => {
 		const searchTerm = e.target.value;
 		setCustomerSearchTerm(searchTerm);
+		setShowCustomerDropdown(true);
 		setFilteredCustomers(
 			customers.filter((customer) =>
 				customer.name.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -168,18 +169,36 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 	};
 
 	const selectCustomer = (customer) => {
+		console.log("Selected customer:", customer); // Debug log
 		setFormData((prev) => ({
 			...prev,
 			customerId: customer.id,
 			customerName: customer.name,
 		}));
-		setCustomerSearchTerm("");
+		setCustomerSearchTerm(customer.name); // Update search term with selected name
 		setShowCustomerDropdown(false);
 	};
+
+	// Add click outside handler to close dropdown
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				customerDropdownRef.current &&
+				!customerDropdownRef.current.contains(event.target)
+			) {
+				setShowCustomerDropdown(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () =>
+			document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
 
 	const handleProjectManagerSearch = (e) => {
 		const searchTerm = e.target.value;
 		setProjectManagerSearchTerm(searchTerm);
+		setShowProjectManagerDropdown(true);
 		setFilteredProjectManagers(
 			projectManagers.filter((pm) =>
 				`${pm.firstName} ${pm.lastName}`
@@ -190,14 +209,31 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 	};
 
 	const selectProjectManager = (pm) => {
+		console.log("Selected PM:", pm); // Debug log
 		setFormData((prev) => ({
 			...prev,
 			projectManagerId: pm.id,
 			projectManagerName: `${pm.firstName} ${pm.lastName}`,
 		}));
-		setProjectManagerSearchTerm("");
+		setProjectManagerSearchTerm(`${pm.firstName} ${pm.lastName}`);
 		setShowProjectManagerDropdown(false);
 	};
+
+	// Add click outside handler for PM dropdown
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				projectManagerDropdownRef.current &&
+				!projectManagerDropdownRef.current.contains(event.target)
+			) {
+				setShowProjectManagerDropdown(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () =>
+			document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
 
 	return (
 		<Modal show={show} onHide={onHide} size="lg">
@@ -260,7 +296,9 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 							<Form.Control
 								type="text"
 								placeholder="Search customers..."
-								value={customerSearchTerm}
+								value={
+									formData.customerName || customerSearchTerm
+								} // Show selected customer name or search term
 								onChange={handleCustomerSearch}
 								onClick={() => setShowCustomerDropdown(true)}
 								autoComplete="off"
@@ -315,7 +353,10 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 							<Form.Control
 								type="text"
 								placeholder="Search project managers..."
-								value={projectManagerSearchTerm}
+								value={
+									formData.projectManagerName ||
+									projectManagerSearchTerm
+								}
 								onChange={handleProjectManagerSearch}
 								onClick={() =>
 									setShowProjectManagerDropdown(true)

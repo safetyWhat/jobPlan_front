@@ -106,11 +106,13 @@ const EmployeeFormModal = ({
 			}
 
 			setSuccess(true);
-			if (onSuccess) onSuccess();
+			if (onSuccess) {
+				await onSuccess();
+			}
 
 			setTimeout(() => {
 				onHide();
-			}, 1500);
+			}, 1000);
 		} catch (err) {
 			console.error("Error saving employee:", err);
 			const errorMessage =

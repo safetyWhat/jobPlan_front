@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { Card, Table, Button, Modal, Alert, Spinner } from "react-bootstrap";
 import { FaEdit, FaTrashAlt, FaRedo, FaPlus } from "react-icons/fa";
@@ -6,10 +6,7 @@ import EmployeeFormModal from "./employeeEdit";
 import useDepartmentsData from "../hooks/useDepartmentsData";
 import usePositionsData from "../hooks/usePositionsData";
 
-const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
-	const [employees, setEmployees] = useState([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
+const EmployeeManagement = ({ employees, isFiltering, onEmployeeChange }) => {
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -24,35 +21,6 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
 	// Use the existing hooks to get departments and positions data
 	const { departments } = useDepartmentsData();
 	const { positions } = usePositionsData();
-
-	const fetchEmployees = useCallback(async () => {
-		setLoading(true);
-		try {
-			if (filteredEmployees) {
-				setEmployees(filteredEmployees);
-			} else {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/employees`,
-				);
-				setEmployees(response.data.data || response.data);
-			}
-			setError(null);
-		} catch (err) {
-			console.error("Error fetching employees:", err);
-			setError("Failed to load employees. Please try again.");
-		} finally {
-			setLoading(false);
-		}
-	}, [filteredEmployees]);
-
-	useEffect(() => {
-		if (filteredEmployees) {
-			setEmployees(filteredEmployees);
-			setLoading(false);
-		} else {
-			fetchEmployees();
-		}
-	}, [filteredEmployees, fetchEmployees]);
 
 	const handleEdit = (employee) => {
 		setSelectedEmployee(employee);
@@ -77,7 +45,7 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
 			);
 			setShowDeleteModal(false);
 			setEmployeeToDelete(null);
-			fetchEmployees();
+			if (onEmployeeChange) onEmployeeChange();
 		} catch (err) {
 			console.error("Error deleting employee:", err);
 			setDeleteError("Failed to delete employee. Please try again.");
@@ -114,20 +82,13 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
 					>
 						<FaPlus className="me-1" /> Add Employee
 					</Button>
-					<Button
-						variant="light"
-						size="sm"
-						onClick={fetchEmployees}
-						disabled={loading}
-					>
+					<Button variant="light" size="sm" disabled={isFiltering}>
 						<FaRedo />
 					</Button>
 				</div>
 			</Card.Header>
 			<Card.Body>
-				{error && <Alert variant="danger">{error}</Alert>}
-
-				{loading || isFiltering ? (
+				{isFiltering ? (
 					<div className="text-center p-3">
 						<Spinner animation="border" variant="primary" />
 						<p className="mt-2">Loading employees...</p>
@@ -220,7 +181,9 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
 				onHide={() => setShowCreateModal(false)}
 				departments={departments}
 				positions={positions}
-				onSuccess={fetchEmployees}
+				onSuccess={() => {
+					if (onEmployeeChange) onEmployeeChange();
+				}}
 				isEditMode={false}
 			/>
 
@@ -230,7 +193,9 @@ const EmployeeManagement = ({ employees: filteredEmployees, isFiltering }) => {
 				employee={selectedEmployee}
 				departments={departments}
 				positions={positions}
-				onSuccess={fetchEmployees}
+				onSuccess={() => {
+					if (onEmployeeChange) onEmployeeChange();
+				}}
 				isEditMode={true}
 			/>
 
