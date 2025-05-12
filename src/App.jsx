@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Routes, Route } from "react-router";
+import React, { useState } from "react";
+import { Routes, Route, Outlet } from "react-router";
 import {
 	Container,
 	Row,
@@ -13,24 +13,33 @@ import Jobs from "./pages/jobs";
 import EmployeeManagement from "./pages/employees";
 import CustomerManagement from "./pages/customers";
 import DeptPosition from "./pages/deptPositions";
+import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
 	const [showNavbar, setShowNavbar] = useState(true);
+	const [searchResults, setSearchResults] = useState(null);
+
+	const handleSearch = (results) => {
+		setSearchResults(results);
+	};
 
 	return (
 		<div className="app-container">
 			{/* Header */}
 			<BootstrapNavbar bg="dark" variant="dark" className="header p-3">
 				<Container fluid>
-					<Button
-						variant="outline-light"
-						className="me-2 d-flex align-items-center"
-						onClick={() => setShowNavbar(!showNavbar)}
-					>
-						<FaBars />
-					</Button>
-					<BootstrapNavbar.Brand>Job Plan</BootstrapNavbar.Brand>
+					<div className="d-flex align-items-center">
+						<Button
+							variant="outline-light"
+							className="me-2"
+							onClick={() => setShowNavbar(!showNavbar)}
+						>
+							<FaBars />
+						</Button>
+						<SearchBar onSearchResults={handleSearch} />
+						<BootstrapNavbar.Brand>Job Plan</BootstrapNavbar.Brand>
+					</div>
 				</Container>
 			</BootstrapNavbar>
 
@@ -63,6 +72,7 @@ function App() {
 								element={<DeptPosition />}
 							/>
 						</Routes>
+						<Outlet context={{ searchResults }} />
 					</Col>
 				</Row>
 			</Container>
