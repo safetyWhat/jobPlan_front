@@ -29,9 +29,6 @@ function Employees() {
 	useEffect(() => {
 		fetchAllEmployees();
 	}, []);
-	useEffect(() => {
-		console.log("Employees updated:", filteredEmployees);
-	}, [filteredEmployees]);
 
 	const handleFilterChange = async (filters) => {
 		try {

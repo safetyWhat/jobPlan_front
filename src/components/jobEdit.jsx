@@ -46,6 +46,10 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 		useState(false);
 	const projectManagerDropdownRef = useRef(null);
 
+	const [highlightedCustomerIndex, setHighlightedCustomerIndex] =
+		useState(-1);
+	const [highlightedManagerIndex, setHighlightedManagerIndex] = useState(-1);
+
 	// Reset form when modal opens/closes or job changes
 	useEffect(() => {
 		if (show) {
@@ -131,7 +135,13 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 
 			const method = isEditMode ? "put" : "post";
 
-			await axios[method](url, formData);
+			// Create a new object with processed data
+			const processedFormData = {
+				...formData,
+				sbId: formData.sbId.trim() === "" ? null : formData.sbId,
+			};
+
+			await axios[method](url, processedFormData);
 
 			if (onSuccess) {
 				onSuccess();
@@ -177,6 +187,7 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 		}));
 		setCustomerSearchTerm(customer.name); // Update search term with selected name
 		setShowCustomerDropdown(false);
+		setHighlightedCustomerIndex(-1); // Add this line
 	};
 
 	// Add click outside handler to close dropdown
@@ -217,6 +228,7 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 		}));
 		setProjectManagerSearchTerm(`${pm.firstName} ${pm.lastName}`);
 		setShowProjectManagerDropdown(false);
+		setHighlightedManagerIndex(-1); // Add this line
 	};
 
 	// Add click outside handler for PM dropdown
@@ -234,6 +246,68 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 		return () =>
 			document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
+
+	const handleCustomerKeyDown = (e) => {
+		if (!showCustomerDropdown) return;
+
+		switch (e.key) {
+			case "ArrowDown":
+				e.preventDefault();
+				setHighlightedCustomerIndex((prev) =>
+					prev < filteredCustomers.length - 1 ? prev + 1 : prev,
+				);
+				break;
+			case "ArrowUp":
+				e.preventDefault();
+				setHighlightedCustomerIndex((prev) =>
+					prev > 0 ? prev - 1 : prev,
+				);
+				break;
+			case "Enter":
+			case "Tab":
+				e.preventDefault();
+				if (highlightedCustomerIndex >= 0) {
+					selectCustomer(filteredCustomers[highlightedCustomerIndex]);
+				}
+				break;
+			case "Escape":
+				setShowCustomerDropdown(false);
+				setHighlightedCustomerIndex(-1);
+				break;
+		}
+	};
+
+	const handleProjectManagerKeyDown = (e) => {
+		if (!showProjectManagerDropdown) return;
+
+		switch (e.key) {
+			case "ArrowDown":
+				e.preventDefault();
+				setHighlightedManagerIndex((prev) =>
+					prev < filteredProjectManagers.length - 1 ? prev + 1 : prev,
+				);
+				break;
+			case "ArrowUp":
+				e.preventDefault();
+				setHighlightedManagerIndex((prev) =>
+					prev > 0 ? prev - 1 : prev,
+				);
+				break;
+			case "Enter":
+			case "Tab":
+				e.preventDefault();
+				if (highlightedManagerIndex >= 0) {
+					selectProjectManager(
+						filteredProjectManagers[highlightedManagerIndex],
+					);
+				}
+				break;
+			case "Escape":
+				setShowProjectManagerDropdown(false);
+				setHighlightedManagerIndex(-1);
+				break;
+		}
+	};
 
 	return (
 		<Modal show={show} onHide={onHide} size="lg">
@@ -298,9 +372,10 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 								placeholder="Search customers..."
 								value={
 									formData.customerName || customerSearchTerm
-								} // Show selected customer name or search term
+								}
 								onChange={handleCustomerSearch}
 								onClick={() => setShowCustomerDropdown(true)}
+								onKeyDown={handleCustomerKeyDown}
 								autoComplete="off"
 							/>
 							{formData.customerId && (
@@ -329,10 +404,14 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 									overflowY: "auto",
 								}}
 							>
-								{filteredCustomers.map((customer) => (
+								{filteredCustomers.map((customer, index) => (
 									<div
 										key={customer.id}
-										className="p-2 hover-bg-light border-bottom"
+										className={`p-2 ${
+											highlightedCustomerIndex === index
+												? "bg-light"
+												: ""
+										}`}
 										onClick={() => selectCustomer(customer)}
 										style={{ cursor: "pointer" }}
 									>
@@ -361,6 +440,7 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 								onClick={() =>
 									setShowProjectManagerDropdown(true)
 								}
+								onKeyDown={handleProjectManagerKeyDown}
 								autoComplete="off"
 							/>
 							{formData.projectManagerId && (
@@ -389,10 +469,14 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 									overflowY: "auto",
 								}}
 							>
-								{filteredProjectManagers.map((pm) => (
+								{filteredProjectManagers.map((pm, index) => (
 									<div
 										key={pm.id}
-										className="p-2 hover-bg-light border-bottom"
+										className={`p-2 ${
+											highlightedManagerIndex === index
+												? "bg-light"
+												: ""
+										}`}
 										onClick={() => selectProjectManager(pm)}
 										style={{ cursor: "pointer" }}
 									>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import {
 	Card,
@@ -14,10 +14,7 @@ import {
 import { FaEdit, FaTrashAlt, FaRedo, FaPlus } from "react-icons/fa";
 import JobEditModal from "./jobEdit";
 
-const JobManagement = () => {
-	const [jobs, setJobs] = useState([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState(null);
+const JobManagement = ({ jobs = [], isLoading = true, onJobChange }) => {
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showEditModal, setShowEditModal] = useState(false);
 	const [selectedJob, setSelectedJob] = useState(null);
@@ -30,25 +27,10 @@ const JobManagement = () => {
 	const [deleteError, setDeleteError] = useState(null);
 
 	const fetchJobs = async () => {
-		setIsLoading(true);
-		setError(null);
-
-		try {
-			const response = await axios.get(
-				`${import.meta.env.VITE_API_URL}/jobs`,
-			);
-			setJobs(response.data.data || []);
-		} catch (err) {
-			console.error("Error fetching jobs:", err);
-			setError("Failed to load jobs. Please try again.");
-		} finally {
-			setIsLoading(false);
+		if (onJobChange) {
+			onJobChange();
 		}
 	};
-
-	useEffect(() => {
-		fetchJobs();
-	}, []);
 
 	const handleJobClick = (jobId) => {
 		setExpandedJobId(expandedJobId === jobId ? null : jobId);
@@ -110,8 +92,6 @@ const JobManagement = () => {
 					</div>
 				</Card.Header>
 				<Card.Body>
-					{error && <Alert variant="danger">{error}</Alert>}
-
 					{isLoading ? (
 						<div className="text-center p-3">
 							<Spinner animation="border" variant="primary" />
