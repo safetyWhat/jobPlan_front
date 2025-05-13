@@ -1,10 +1,10 @@
 import React from "react";
 import CustomerManagement from "../components/customerCard";
 
-function Customers() {
+function Customers({ searchResults }) {
 	return (
 		<div className="container">
-			<CustomerManagement />
+			<CustomerManagement searchResults={searchResults} />
 		</div>
 	);
 }

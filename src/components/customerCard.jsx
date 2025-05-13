@@ -4,10 +4,8 @@ import axios from "axios";
 import { Card, Button, Table, Alert, Spinner } from "react-bootstrap";
 import { FaEdit, FaTrashAlt, FaRedo, FaPlus } from "react-icons/fa";
 
-const CustomerManagement = () => {
-	// State for customers list
+const CustomerManagement = ({ searchResults }) => {
 	const [customers, setCustomers] = useState([]);
-	// State for form data
 	const [formData, setFormData] = useState({
 		name: "",
 		address: "",
@@ -15,20 +13,20 @@ const CustomerManagement = () => {
 		fax: "",
 		email: "",
 	});
-	// State for edit mode
 	const [editMode, setEditMode] = useState(false);
 	const [currentCustomerId, setCurrentCustomerId] = useState(null);
-	// State for errors
 	const [errors, setErrors] = useState({});
-	// State for loading status
 	const [loading, setLoading] = useState(false);
-	// State for modal visibility
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	// Fetch all customers on component mount
 	useEffect(() => {
-		fetchCustomers();
-	}, []);
+		if (searchResults?.length > 0) {
+			setCustomers(searchResults);
+		} else {
+			fetchCustomers();
+		}
+	}, [searchResults]);
 
 	// Function to fetch all customers
 	const fetchCustomers = async () => {

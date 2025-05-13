@@ -10,8 +10,8 @@ import {
 import { FaBars } from "react-icons/fa";
 import Navbar from "./components/navbar";
 import Jobs from "./pages/jobs";
-import EmployeeManagement from "./pages/employees";
-import CustomerManagement from "./pages/customers";
+import Employees from "./pages/employees";
+import Customers from "./pages/customers";
 import DeptPosition from "./pages/deptPositions";
 import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -65,14 +65,14 @@ function App() {
 							<Route
 								path="/employees"
 								element={
-									<EmployeeManagement
-										searchResults={searchResults}
-									/>
+									<Employees searchResults={searchResults} />
 								}
 							/>
 							<Route
 								path="/customers"
-								element={<CustomerManagement />}
+								element={
+									<Customers searchResults={searchResults} />
+								}
 							/>
 							<Route
 								path="/deptPositions"
