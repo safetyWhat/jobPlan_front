@@ -26,8 +26,9 @@ const SearchBar = ({ onSearchResults }) => {
 
 		try {
 			const response = await axios.get(
-				`${import.meta.env.VITE_API_URL}/${endpoint}/search?term=${value}`,
+				`${import.meta.env.VITE_API_URL}/${endpoint}/search?query=${value}`,
 			);
+			console.log("Search results:", response.data.data);
 			onSearchResults(response.data.data);
 		} catch (error) {
 			console.error("Search error:", error);

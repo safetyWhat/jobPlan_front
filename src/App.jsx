@@ -58,7 +58,10 @@ function App() {
 					{/* Main Content Area */}
 					<Col className="main-content p-4">
 						<Routes>
-							<Route path="/jobs" element={<Jobs />} />
+							<Route
+								path="/jobs"
+								element={<Jobs searchResults={searchResults} />}
+							/>
 							<Route
 								path="/employee"
 								element={<EmployeeManagement />}

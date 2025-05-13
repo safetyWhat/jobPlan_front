@@ -28,6 +28,7 @@ const JobManagement = ({ jobs = [], isLoading = true, onJobChange }) => {
 
 	const fetchJobs = async () => {
 		if (onJobChange) {
+			console.log("Jobs changed");
 			onJobChange();
 		}
 	};

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import JobManagement from "../components/jobCard";
 import JobFilters from "../components/jobFilters";
 import axios from "axios";
-import { useOutletContext } from "react-router";
+//import { useOutletContext } from "react-router";
 
-function Jobs() {
+function Jobs({ searchResults }) {
 	const [filteredJobs, setFilteredJobs] = useState([]);
 	const [isFiltering, setIsFiltering] = useState(false);
 	const [currentFilters, setCurrentFilters] = useState({
@@ -16,9 +16,9 @@ function Jobs() {
 		prevWage: "",
 	});
 
-	// Add default value for context
+	/* // Add default value for context
 	const context = useOutletContext();
-	const searchResults = context?.searchResults;
+	const searchResults = context?.searchResults; */
 
 	const fetchAllJobs = async () => {
 		try {
@@ -62,6 +62,7 @@ function Jobs() {
 	useEffect(() => {
 		if (searchResults?.length > 0) {
 			setFilteredJobs(searchResults);
+			console.log("New filtered jobs:", searchResults);
 		} else {
 			fetchAllJobs();
 		}
