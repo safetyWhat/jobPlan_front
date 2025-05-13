@@ -3,7 +3,7 @@ import axios from "axios";
 import EmployeeManagement from "../components/employeeCard";
 import EmployeeFilters from "../components/employeeFilters";
 
-function Employees() {
+function Employees({ searchResults }) {
 	const [filteredEmployees, setFilteredEmployees] = useState([]);
 	const [isFiltering, setIsFiltering] = useState(false);
 	const [currentFilters, setCurrentFilters] = useState({
@@ -27,8 +27,12 @@ function Employees() {
 
 	// Load all employees when component mounts
 	useEffect(() => {
-		fetchAllEmployees();
-	}, []);
+		if (searchResults?.length > 0) {
+			setFilteredEmployees(searchResults);
+		} else {
+			fetchAllEmployees();
+		}
+	}, [searchResults]);
 
 	const handleFilterChange = async (filters) => {
 		try {

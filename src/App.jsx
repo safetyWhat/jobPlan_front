@@ -63,8 +63,12 @@ function App() {
 								element={<Jobs searchResults={searchResults} />}
 							/>
 							<Route
-								path="/employee"
-								element={<EmployeeManagement />}
+								path="/employees"
+								element={
+									<EmployeeManagement
+										searchResults={searchResults}
+									/>
+								}
 							/>
 							<Route
 								path="/customers"

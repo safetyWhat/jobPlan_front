@@ -20,8 +20,8 @@ function Navbar() {
 			</Nav.Link>
 			<Nav.Link
 				as={Link}
-				to="/employee"
-				className={`p-3 border-bottom ${isActive("/employee") ? "active" : ""}`}
+				to="/employees"
+				className={`p-3 border-bottom ${isActive("/employees") ? "active" : ""}`}
 			>
 				Employees
 			</Nav.Link>

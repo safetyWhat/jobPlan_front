@@ -5,12 +5,22 @@ import axios from "axios";
 const SearchBar = ({ onSearchResults }) => {
 	const [searchTerm, setSearchTerm] = useState("");
 	const location = useLocation();
+	let page = "";
 
 	const getSearchEndpoint = () => {
 		const path = location.pathname;
-		if (path.includes("jobs")) return "jobs";
-		if (path.includes("employees")) return "employees";
-		if (path.includes("customers")) return "customers";
+		if (path.includes("jobs")) {
+			page = "jobs";
+			return "jobs";
+		}
+		if (path.includes("employees")) {
+			page = "employees";
+			return "employees";
+		}
+		if (path.includes("customers")) {
+			page = "customers";
+			return "customers";
+		}
 		return null;
 	};
 
@@ -39,7 +49,7 @@ const SearchBar = ({ onSearchResults }) => {
 	return getSearchEndpoint() ? (
 		<input
 			type="search"
-			placeholder="Search..."
+			placeholder={"Search " + page + "..."}
 			value={searchTerm}
 			onChange={handleSearch}
 			className="form-control"
