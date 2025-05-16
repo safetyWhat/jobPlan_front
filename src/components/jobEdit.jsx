@@ -250,63 +250,85 @@ const JobEditModal = ({ show, onHide, job, onSuccess, isEditMode = false }) => {
 	const handleCustomerKeyDown = (e) => {
 		if (!showCustomerDropdown) return;
 
-		switch (e.key) {
-			case "ArrowDown":
-				e.preventDefault();
-				setHighlightedCustomerIndex((prev) =>
-					prev < filteredCustomers.length - 1 ? prev + 1 : prev,
-				);
-				break;
-			case "ArrowUp":
-				e.preventDefault();
-				setHighlightedCustomerIndex((prev) =>
-					prev > 0 ? prev - 1 : prev,
-				);
-				break;
-			case "Enter":
-			case "Tab":
-				e.preventDefault();
-				if (highlightedCustomerIndex >= 0) {
-					selectCustomer(filteredCustomers[highlightedCustomerIndex]);
-				}
-				break;
-			case "Escape":
-				setShowCustomerDropdown(false);
-				setHighlightedCustomerIndex(-1);
-				break;
-		}
+		const keyMap = createKeyboardMap({
+			items: filteredCustomers,
+			setHighlightedIndex: setHighlightedCustomerIndex,
+			selectItem: selectCustomer,
+			setShowDropdown: setShowCustomerDropdown,
+			highlightedIndex: highlightedCustomerIndex,
+		});
+
+		const handler = keyMap.get(e.key);
+		if (handler) handler(e);
 	};
 
 	const handleProjectManagerKeyDown = (e) => {
 		if (!showProjectManagerDropdown) return;
 
-		switch (e.key) {
-			case "ArrowDown":
-				e.preventDefault();
-				setHighlightedManagerIndex((prev) =>
-					prev < filteredProjectManagers.length - 1 ? prev + 1 : prev,
-				);
-				break;
-			case "ArrowUp":
-				e.preventDefault();
-				setHighlightedManagerIndex((prev) =>
-					prev > 0 ? prev - 1 : prev,
-				);
-				break;
-			case "Enter":
-			case "Tab":
-				e.preventDefault();
-				if (highlightedManagerIndex >= 0) {
-					selectProjectManager(
-						filteredProjectManagers[highlightedManagerIndex],
+		const keyMap = createKeyboardMap({
+			items: filteredProjectManagers,
+			setHighlightedIndex: setHighlightedManagerIndex,
+			selectItem: selectProjectManager,
+			setShowDropdown: setShowProjectManagerDropdown,
+			highlightedIndex: highlightedManagerIndex,
+		});
+
+		const handler = keyMap.get(e.key);
+		if (handler) handler(e);
+	};
+
+	const createKeyboardMap = (options) => {
+		const {
+			items,
+			setHighlightedIndex,
+			selectItem,
+			setShowDropdown,
+			highlightedIndex,
+		} = options;
+
+		return new Map([
+			[
+				"ArrowDown",
+				(e) => {
+					e.preventDefault();
+					setHighlightedIndex((prev) =>
+						prev < items.length - 1 ? prev + 1 : prev,
 					);
-				}
-				break;
-			case "Escape":
-				setShowProjectManagerDropdown(false);
-				setHighlightedManagerIndex(-1);
-				break;
-		}
+				},
+			],
+			[
+				"ArrowUp",
+				(e) => {
+					e.preventDefault();
+					setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+				},
+			],
+			[
+				"Enter",
+				(e) => {
+					e.preventDefault();
+					if (highlightedIndex >= 0) {
+						selectItem(items[highlightedIndex]);
+					}
+				},
+			],
+			[
+				"Tab",
+				(e) => {
+					e.preventDefault();
+					if (highlightedIndex >= 0) {
+						selectItem(items[highlightedIndex]);
+					}
+				},
+			],
+			[
+				"Escape",
+				() => {
+					setShowDropdown(false);
+					setHighlightedIndex(-1);
+				},
+			],
+		]);
 	};
 
 	return (
