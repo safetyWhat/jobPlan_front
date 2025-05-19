@@ -69,158 +69,156 @@ const JobManagement = ({ jobs = [], isLoading = true, onJobChange }) => {
 	};
 
 	return (
-		<Container className="mt-4">
-			<Card className="shadow-sm">
-				<Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-					<h5 className="mb-0">Job Management</h5>
-					<div>
-						<Button
-							variant="light"
-							size="sm"
-							className="me-2"
-							onClick={() => setShowCreateModal(true)}
-						>
-							<FaPlus className="me-1" /> Add Job
-						</Button>
-						<Button
-							variant="light"
-							size="sm"
-							onClick={fetchJobs}
-							disabled={isLoading}
-						>
-							<FaRedo />
-						</Button>
+		<Card className="shadow-sm">
+			<Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+				<h5 className="mb-0">Job Management</h5>
+				<div>
+					<Button
+						variant="light"
+						size="sm"
+						className="me-2"
+						onClick={() => setShowCreateModal(true)}
+					>
+						<FaPlus className="me-1" /> Add Job
+					</Button>
+					<Button
+						variant="light"
+						size="sm"
+						onClick={fetchJobs}
+						disabled={isLoading}
+					>
+						<FaRedo />
+					</Button>
+				</div>
+			</Card.Header>
+			<Card.Body>
+				{isLoading ? (
+					<div className="text-center p-3">
+						<Spinner animation="border" variant="primary" />
+						<p className="mt-2">Loading jobs...</p>
 					</div>
-				</Card.Header>
-				<Card.Body>
-					{isLoading ? (
-						<div className="text-center p-3">
-							<Spinner animation="border" variant="primary" />
-							<p className="mt-2">Loading jobs...</p>
-						</div>
-					) : jobs.length === 0 ? (
-						<Alert variant="info">
-							No jobs found. Create your first job using the
-							button above.
-						</Alert>
-					) : (
-						jobs.map((job) => (
-							<Card
-								key={job.id}
-								className="mb-3 shadow-sm"
-								onClick={() => handleJobClick(job.id)}
-								style={{ cursor: "pointer" }}
-							>
-								<Card.Header className="d-flex justify-content-between align-items-center">
-									<div>
-										<h6 className="mb-0">{job.jobName}</h6>
-										<small className="text-muted">
-											{job.jobNum || "No Job Number"}
-										</small>
+				) : jobs.length === 0 ? (
+					<Alert variant="info">
+						No jobs found. Create your first job using the button
+						above.
+					</Alert>
+				) : (
+					jobs.map((job) => (
+						<Card
+							key={job.id}
+							className="mb-3 shadow-sm"
+							onClick={() => handleJobClick(job.id)}
+							style={{ cursor: "pointer" }}
+						>
+							<Card.Header className="d-flex justify-content-between align-items-center">
+								<div>
+									<h6 className="mb-0">{job.jobName}</h6>
+									<small className="text-muted">
+										{job.jobNum || "No Job Number"}
+									</small>
+								</div>
+							</Card.Header>
+
+							{expandedJobId === job.id && (
+								<Card.Body>
+									<div className="d-flex justify-content-end mb-3">
+										<Button
+											variant="outline-primary"
+											size="sm"
+											className="me-2"
+											onClick={(e) => {
+												e.stopPropagation();
+												handleEdit(job);
+											}}
+										>
+											<FaEdit />
+										</Button>
+										<Button
+											variant="outline-danger"
+											size="sm"
+											onClick={(e) => {
+												e.stopPropagation();
+												handleDelete(job);
+											}}
+										>
+											<FaTrashAlt />
+										</Button>
 									</div>
-								</Card.Header>
 
-								{expandedJobId === job.id && (
-									<Card.Body>
-										<div className="d-flex justify-content-end mb-3">
-											<Button
-												variant="outline-primary"
-												size="sm"
-												className="me-2"
-												onClick={(e) => {
-													e.stopPropagation();
-													handleEdit(job);
-												}}
+									<Row>
+										<Col md={6}>
+											<Badge
+												bg={
+													job.active
+														? "success"
+														: "secondary"
+												}
+												className="me-1"
 											>
-												<FaEdit />
-											</Button>
-											<Button
-												variant="outline-danger"
-												size="sm"
-												onClick={(e) => {
-													e.stopPropagation();
-													handleDelete(job);
-												}}
-											>
-												<FaTrashAlt />
-											</Button>
-										</div>
-
-										<Row>
-											<Col md={6}>
+												{job.active
+													? "Active"
+													: "Inactive"}
+											</Badge>
+											{job.complete && (
 												<Badge
-													bg={
-														job.active
-															? "success"
-															: "secondary"
-													}
+													bg="info"
 													className="me-1"
 												>
-													{job.active
-														? "Active"
-														: "Inactive"}
+													Complete
 												</Badge>
-												{job.complete && (
-													<Badge
-														bg="info"
-														className="me-1"
-													>
-														Complete
-													</Badge>
-												)}
-												{job.prevWage && (
-													<Badge
-														bg="warning"
-														className="me-1"
-													>
-														Prevailing Wage
-													</Badge>
-												)}
-											</Col>
-											<Col md={6} className="text-md-end">
-												<small className="text-muted">
-													Drive Time:{" "}
-													{job.driveTime || "None"}
-												</small>
-											</Col>
-										</Row>
+											)}
+											{job.prevWage && (
+												<Badge
+													bg="warning"
+													className="me-1"
+												>
+													Prevailing Wage
+												</Badge>
+											)}
+										</Col>
+										<Col md={6} className="text-md-end">
+											<small className="text-muted">
+												Drive Time:{" "}
+												{job.driveTime || "None"}
+											</small>
+										</Col>
+									</Row>
 
-										{job.siteAddress && (
-											<div className="mt-2">
-												<small className="text-muted">
-													Site Address:
-												</small>
-												<br />
-												{job.siteAddress}
-											</div>
-										)}
+									{job.siteAddress && (
+										<div className="mt-2">
+											<small className="text-muted">
+												Site Address:
+											</small>
+											<br />
+											{job.siteAddress}
+										</div>
+									)}
 
-										<Row className="mt-3">
-											<Col md={6}>
-												<small className="text-muted">
-													Customer:
-												</small>
-												<br />
-												{job.customerName?.name ||
-													"Not assigned"}
-											</Col>
-											<Col md={6}>
-												<small className="text-muted">
-													Project Manager:
-												</small>
-												<br />
-												{job.projectManager
-													? `${job.projectManager.firstName} ${job.projectManager.lastName}`
-													: "Not assigned"}
-											</Col>
-										</Row>
-									</Card.Body>
-								)}
-							</Card>
-						))
-					)}
-				</Card.Body>
-			</Card>
+									<Row className="mt-3">
+										<Col md={6}>
+											<small className="text-muted">
+												Customer:
+											</small>
+											<br />
+											{job.customerName?.name ||
+												"Not assigned"}
+										</Col>
+										<Col md={6}>
+											<small className="text-muted">
+												Project Manager:
+											</small>
+											<br />
+											{job.projectManager
+												? `${job.projectManager.firstName} ${job.projectManager.lastName}`
+												: "Not assigned"}
+										</Col>
+									</Row>
+								</Card.Body>
+							)}
+						</Card>
+					))
+				)}
+			</Card.Body>
 
 			<JobEditModal
 				show={showCreateModal}
@@ -282,7 +280,7 @@ const JobManagement = ({ jobs = [], isLoading = true, onJobChange }) => {
 					</Button>
 				</Modal.Footer>
 			</Modal>
-		</Container>
+		</Card>
 	);
 };
 

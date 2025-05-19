@@ -15,10 +15,7 @@ function Jobs({ searchResults }) {
 		driveTime: "",
 		prevWage: "",
 	});
-
-	/* // Add default value for context
-	const context = useOutletContext();
-	const searchResults = context?.searchResults; */
+	const [isFiltersVisible, setIsFiltersVisible] = useState(false); // Add this new state
 
 	const fetchAllJobs = async () => {
 		try {
@@ -70,10 +67,30 @@ function Jobs({ searchResults }) {
 
 	return (
 		<div className="container">
-			<JobFilters
-				onFilterChange={handleFilterChange}
-				onClearFilters={fetchAllJobs}
-			/>
+			<div
+				className="filters-header"
+				onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+				style={{
+					padding: ".25rem",
+					backgroundColor: "#f5f5f5",
+					borderRadius: "4px",
+					cursor: "pointer",
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "center",
+					marginBottom: "1rem",
+				}}
+			>
+				<span>Filters {isFiltersVisible ? "▼" : "▶"}</span>
+			</div>
+
+			{isFiltersVisible && (
+				<JobFilters
+					onFilterChange={handleFilterChange}
+					onClearFilters={fetchAllJobs}
+				/>
+			)}
+
 			<JobManagement
 				jobs={filteredJobs}
 				isLoading={isFiltering}
