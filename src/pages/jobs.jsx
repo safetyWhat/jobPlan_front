@@ -15,7 +15,7 @@ function Jobs({ searchResults }) {
 		driveTime: "",
 		prevWage: "",
 	});
-	const [isFiltersVisible, setIsFiltersVisible] = useState(false); // Add this new state
+	const [isFiltersVisible, setIsFiltersVisible] = useState(false);
 
 	const fetchAllJobs = async () => {
 		try {

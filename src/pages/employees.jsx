@@ -10,6 +10,7 @@ function Employees({ searchResults }) {
 		departmentId: "",
 		positionId: "",
 	});
+	const [isFiltersVisible, setIsFiltersVisible] = useState(false);
 
 	const fetchAllEmployees = async () => {
 		try {
@@ -69,10 +70,31 @@ function Employees({ searchResults }) {
 
 	return (
 		<div className="container">
-			<EmployeeFilters
-				onFilterChange={handleFilterChange}
-				onClearFilters={fetchAllEmployees}
-			/>
+			<div
+				className="filters-header"
+				onClick={() => setIsFiltersVisible(!isFiltersVisible)}
+				style={{
+					padding: ".25rem",
+					backgroundColor: "#f5f5f5",
+					borderRadius: "4px",
+					cursor: "pointer",
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "center",
+					marginBottom: "1rem",
+				}}
+			>
+				<span>Filters {isFiltersVisible ? "▼" : "▶"}</span>
+			</div>
+
+			{isFiltersVisible && (
+				<EmployeeFilters
+					onFilterChange={handleFilterChange}
+					onClearFilters={fetchAllEmployees}
+				/>
+			)}
+
+			{/* Employee Management Component */}
 			<EmployeeManagement
 				employees={filteredEmployees}
 				isFiltering={isFiltering}
