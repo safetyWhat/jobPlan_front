@@ -15,6 +15,7 @@ import Customers from "./pages/customers";
 import DeptPosition from "./pages/deptPositions";
 import SearchBar from "./components/SearchBar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import JobBoardPage from "./pages/jobBoard";
 
 function App() {
 	const [showNavbar, setShowNavbar] = useState(true);
@@ -61,6 +62,10 @@ function App() {
 							<Route
 								path="/jobs"
 								element={<Jobs searchResults={searchResults} />}
+							/>
+							<Route
+								path="/jobBoard"
+								element={<JobBoardPage />}
 							/>
 							<Route
 								path="/employees"

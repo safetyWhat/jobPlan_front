@@ -20,6 +20,13 @@ function Navbar() {
 			</Nav.Link>
 			<Nav.Link
 				as={Link}
+				to="/jobBoard"
+				className={`p-3 border-bottom ${isActive("/jobBoard") ? "active" : ""}`}
+			>
+				Job Board
+			</Nav.Link>
+			<Nav.Link
+				as={Link}
 				to="/employees"
 				className={`p-3 border-bottom ${isActive("/employees") ? "active" : ""}`}
 			>
