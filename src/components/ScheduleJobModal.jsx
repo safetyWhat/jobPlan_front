@@ -1,17 +1,47 @@
-import React, { useState } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import { scheduledJobService } from "../services/scheduledJobService";
+import axios from "axios";
 
 const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
-	const [jobId, setJobId] = useState("");
-	const [selectedDates, setSelectedDates] = useState([]);
+	const [jobs, setJobs] = useState([]);
+	const [formData, setFormData] = useState({
+		jobId: "",
+		dates: [
+			{
+				date: "",
+				crewSize: "",
+				otherIdentifier: ["NONE"],
+				operator: {
+					type: "NONE",
+					count: "",
+				},
+			},
+		],
+	});
+
+	useEffect(() => {
+		const fetchJobs = async () => {
+			try {
+				const response = await axios.get(
+					`${import.meta.env.VITE_API_URL}/jobs`,
+				);
+				setJobs(response.data.data.filter((job) => job.active));
+			} catch (error) {
+				console.error("Failed to fetch jobs:", error);
+			}
+		};
+		if (show) {
+			fetchJobs();
+		}
+	}, [show]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
 			const response = await scheduledJobService.createScheduledJob(
-				parseInt(jobId),
-				selectedDates,
+				parseInt(formData.jobId),
+				formData.dates,
 			);
 			onJobScheduled(response.data);
 			handleClose();
@@ -20,38 +50,245 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 		}
 	};
 
+	const handleDateChange = (index, field, value) => {
+		setFormData((prev) => ({
+			...prev,
+			dates: prev.dates.map((date, i) =>
+				i === index ? { ...date, [field]: value } : date,
+			),
+		}));
+	};
+
+	const handleOperatorChange = (index, field, value) => {
+		setFormData((prev) => ({
+			...prev,
+			dates: prev.dates.map((date, i) =>
+				i === index
+					? {
+							...date,
+							operator: {
+								...date.operator,
+								[field]:
+									field === "count"
+										? parseInt(value) || ""
+										: value,
+							},
+						}
+					: date,
+			),
+		}));
+	};
+
+	const addDate = () => {
+		setFormData((prev) => ({
+			...prev,
+			dates: [
+				...prev.dates,
+				{
+					date: "",
+					crewSize: "",
+					otherIdentifier: ["NONE"],
+					operator: {
+						type: "NONE",
+						count: "",
+					},
+				},
+			],
+		}));
+	};
+
+	const removeDate = (index) => {
+		setFormData((prev) => ({
+			...prev,
+			dates: prev.dates.filter((_, i) => i !== index),
+		}));
+	};
+
 	return (
-		<Modal show={show} onHide={handleClose}>
+		<Modal show={show} onHide={handleClose} size="lg">
 			<Modal.Header closeButton>
 				<Modal.Title>Schedule New Job</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
 				<Form onSubmit={handleSubmit}>
 					<Form.Group className="mb-3">
-						<Form.Label>Job ID</Form.Label>
-						<Form.Control
-							type="number"
-							value={jobId}
-							onChange={(e) => setJobId(e.target.value)}
+						<Form.Label>Select Job</Form.Label>
+						<Form.Select
+							value={formData.jobId}
+							onChange={(e) =>
+								setFormData((prev) => ({
+									...prev,
+									jobId: e.target.value,
+								}))
+							}
 							required
-						/>
+						>
+							<option value="">Select a job...</option>
+							{jobs.map((job) => (
+								<option key={job.id} value={job.id}>
+									{job.jobName}{" "}
+									{job.jobNum ? `(${job.jobNum})` : ""}
+								</option>
+							))}
+						</Form.Select>
 					</Form.Group>
-					<Form.Group className="mb-3">
-						<Form.Label>Select Dates</Form.Label>
-						<Form.Control
-							type="date"
-							multiple
-							onChange={(e) => {
-								const dates = Array.from(
-									e.target.selectedOptions,
-								).map((option) => option.value);
-								setSelectedDates(dates);
-							}}
-						/>
-					</Form.Group>
-					<Button variant="primary" type="submit">
-						Schedule Job
+
+					{formData.dates.map((date, index) => (
+						<div key={index} className="border rounded p-3 mb-3">
+							<div className="d-flex justify-content-end mb-2">
+								{index > 0 && (
+									<Button
+										variant="danger"
+										size="sm"
+										onClick={() => removeDate(index)}
+									>
+										Remove Date
+									</Button>
+								)}
+							</div>
+							<Row>
+								<Col md={6}>
+									<Form.Group className="mb-3">
+										<Form.Label>Date</Form.Label>
+										<Form.Control
+											type="date"
+											value={date.date}
+											onChange={(e) =>
+												handleDateChange(
+													index,
+													"date",
+													e.target.value,
+												)
+											}
+											required
+										/>
+									</Form.Group>
+								</Col>
+								<Col md={6}>
+									<Form.Group className="mb-3">
+										<Form.Label>Crew Size</Form.Label>
+										<Form.Control
+											type="number"
+											value={date.crewSize}
+											onChange={(e) =>
+												handleDateChange(
+													index,
+													"crewSize",
+													parseInt(e.target.value) ||
+														"",
+												)
+											}
+										/>
+									</Form.Group>
+								</Col>
+							</Row>
+
+							<Row>
+								<Col md={6}>
+									<Form.Group className="mb-3">
+										<Form.Label>Operator Type</Form.Label>
+										<Form.Select
+											value={date.operator.type}
+											onChange={(e) =>
+												handleOperatorChange(
+													index,
+													"type",
+													e.target.value,
+												)
+											}
+										>
+											<option value="NONE">None</option>
+											<option value="FULL">Full</option>
+											<option value="BOBCAT">
+												Bobcat
+											</option>
+											<option value="DOZER">Dozer</option>
+										</Form.Select>
+									</Form.Group>
+								</Col>
+								<Col md={6}>
+									<Form.Group className="mb-3">
+										<Form.Label>Operator Count</Form.Label>
+										<Form.Control
+											type="number"
+											value={date.operator.count}
+											onChange={(e) =>
+												handleOperatorChange(
+													index,
+													"count",
+													e.target.value,
+												)
+											}
+											disabled={
+												date.operator.type === "NONE"
+											}
+										/>
+									</Form.Group>
+								</Col>
+							</Row>
+
+							<Form.Group className="mb-3">
+								<Form.Label>Other Identifiers</Form.Label>
+								<div>
+									{[
+										"NONE",
+										"TIME_AND_MATERIALS",
+										"TEN_DAY",
+										"GRINDING",
+									].map((identifier) => (
+										<Form.Check
+											key={identifier}
+											inline
+											type="checkbox"
+											label={identifier.replace(
+												/_/g,
+												" ",
+											)}
+											checked={date.otherIdentifier.includes(
+												identifier,
+											)}
+											onChange={(e) => {
+												const newIdentifiers = e.target
+													.checked
+													? [
+															...date.otherIdentifier.filter(
+																(i) =>
+																	i !==
+																	"NONE",
+															),
+															identifier,
+														]
+													: date.otherIdentifier.filter(
+															(i) =>
+																i !==
+																identifier,
+														);
+												handleDateChange(
+													index,
+													"otherIdentifier",
+													newIdentifiers,
+												);
+											}}
+										/>
+									))}
+								</div>
+							</Form.Group>
+						</div>
+					))}
+
+					<Button
+						variant="secondary"
+						onClick={addDate}
+						className="mb-3"
+					>
+						Add Another Date
 					</Button>
+
+					<div className="d-flex justify-content-end">
+						<Button variant="primary" type="submit">
+							Schedule Job
+						</Button>
+					</div>
 				</Form>
 			</Modal.Body>
 		</Modal>

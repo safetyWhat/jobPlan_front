@@ -2,11 +2,23 @@ import axios from "axios";
 
 export const scheduledJobService = {
 	createScheduledJob: async (jobId, dates) => {
+		const formattedDates = dates.map((date) => ({
+			date: date.date,
+			crewSize: date.crewSize || null,
+			otherIdentifier: date.otherIdentifier || ["NONE"],
+			operator: date.operator
+				? {
+						type: date.operator.type || "NONE",
+						count: date.operator.count || null,
+					}
+				: undefined,
+		}));
+
 		const response = await axios.post(
 			`${import.meta.env.VITE_API_URL}/scheduled-jobs`,
 			{
 				jobId,
-				dates,
+				dates: formattedDates,
 			},
 		);
 		return response.data;
@@ -24,10 +36,22 @@ export const scheduledJobService = {
 	},
 
 	updateScheduledJob: async (id, dates) => {
+		const formattedDates = dates.map((date) => ({
+			date: date.date,
+			crewSize: date.crewSize || null,
+			otherIdentifier: date.otherIdentifier || ["NONE"],
+			operator: date.operator
+				? {
+						type: date.operator.type || "NONE",
+						count: date.operator.count || null,
+					}
+				: undefined,
+		}));
+
 		const response = await axios.put(
 			`${import.meta.env.VITE_API_URL}/scheduled-jobs/${id}`,
 			{
-				dates,
+				dates: formattedDates,
 			},
 		);
 		return response.data;

@@ -8,12 +8,15 @@ const JobBoard = () => {
 	const [scheduledJobs, setScheduledJobs] = useState([]);
 	const [dates, setDates] = useState([]);
 	const [showModal, setShowModal] = useState(false);
+	const [selectedJob, setSelectedJob] = useState(null); // Add this for editing
 
 	useEffect(() => {
 		const fetchScheduledJobs = async () => {
 			try {
 				const response = await scheduledJobService.getScheduledJobs();
 				setScheduledJobs(response.data);
+				console.log("Scheduled Jobs:", response.data);
+				console.log("job", response.data[0].job.jobName);
 			} catch (error) {
 				console.error("Failed to fetch scheduled jobs:", error);
 			}
@@ -45,11 +48,24 @@ const JobBoard = () => {
 	};
 
 	const isJobScheduledForDate = (job, date) => {
-		return job.scheduledDates.some(
-			(scheduledDate) =>
-				new Date(scheduledDate.date).toDateString() ===
-				date.toDateString(),
-		);
+		const targetDate = new Date(date).toISOString().split("T")[0];
+		const matches = job.scheduledDates.some((scheduledDate) => {
+			const schedDate = new Date(scheduledDate.date)
+				.toISOString()
+				.split("T")[0];
+			return schedDate === targetDate;
+		});
+
+		console.log("isJobScheduledForDate:", {
+			job: job.job.jobName,
+			targetDate,
+			matches,
+			dates: job.scheduledDates.map(
+				(sd) => new Date(sd.date).toISOString().split("T")[0],
+			),
+		});
+
+		return matches;
 	};
 
 	const handleShowModal = () => setShowModal(true);
@@ -58,6 +74,49 @@ const JobBoard = () => {
 	const handleJobScheduled = (newJob) => {
 		setScheduledJobs([...scheduledJobs, newJob]);
 		handleCloseModal();
+	};
+
+	const getScheduledDateDetails = (job, date) => {
+		// Format both dates to YYYY-MM-DD for consistent comparison
+		const targetDate = new Date(date).toISOString().split("T")[0];
+
+		console.log("Looking for date:", targetDate);
+		console.log(
+			"Available dates:",
+			job.scheduledDates.map(
+				(sd) => new Date(sd.date).toISOString().split("T")[0],
+			),
+		);
+
+		return job.scheduledDates.find((sd) => {
+			const scheduledDate = new Date(sd.date).toISOString().split("T")[0];
+			const matches = scheduledDate === targetDate;
+
+			console.log("Comparing:", {
+				scheduledDate,
+				targetDate,
+				matches,
+			});
+
+			return matches;
+		});
+	};
+
+	const formatOperatorType = (type) => {
+		return type
+			.split("_")
+			.map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+			.join(" ");
+	};
+
+	const getJobColor = (scheduledDate) => {
+		if (!scheduledDate) return "bg-primary";
+		if (scheduledDate.otherIdentifier.includes("TIME_AND_MATERIALS"))
+			return "bg-warning";
+		if (scheduledDate.otherIdentifier.includes("TEN_DAY"))
+			return "bg-danger";
+		if (scheduledDate.operator?.type !== "NONE") return "bg-success";
+		return "bg-primary";
 	};
 
 	return (
@@ -84,21 +143,28 @@ const JobBoard = () => {
 						}}
 					>
 						<p className="m-3 fw-bold">Job Info</p>
-						{scheduledJobs.map((job) => (
-							<div
-								key={job.id}
-								className="m-3 d-flex justify-content-between align-items-center"
-							>
-								<span>{job.job.name}</span>
-								<Button
-									variant="danger"
-									size="sm"
-									onClick={() => handleDeleteJob(job.id)}
-								>
-									<FaTrash />
-								</Button>
-							</div>
-						))}
+						{scheduledJobs.map(
+							(job) => (
+								console.log("job", job.job.jobName),
+								(
+									<div
+										key={job.id}
+										className="m-3 d-flex justify-content-between align-items-center"
+									>
+										<span>{job.job.jobName}</span>
+										<Button
+											variant="danger"
+											size="sm"
+											onClick={() =>
+												handleDeleteJob(job.id)
+											}
+										>
+											<FaTrash />
+										</Button>
+									</div>
+								)
+							),
+						)}
 					</div>
 
 					{/* Scrollable Dates Section */}
@@ -125,30 +191,112 @@ const JobBoard = () => {
 							{/* Job rows */}
 							{scheduledJobs.map((job) => (
 								<Row key={job.id}>
-									{dates.map((date, index) => (
-										<Col
-											key={index}
-											className="text-center border-start border-top"
-											style={{
-												minWidth: "100px",
-												height: "50px",
-											}}
-										>
-											{isJobScheduledForDate(
-												job,
-												date,
-											) && (
-												<div
-													className="bg-primary text-white m-1 p-1 rounded"
+									{dates.map(
+										(date, index) => (
+											console.log(
+												"scheduledDates:",
+												getScheduledDateDetails(
+													job,
+													date,
+												),
+											),
+											(
+												<Col
+													key={index}
+													className="text-center border-start border-top"
 													style={{
-														fontSize: "0.8rem",
+														minWidth: "100px",
+														height: "50px",
 													}}
 												>
-													Scheduled
-												</div>
-											)}
-										</Col>
-									))}
+													{isJobScheduledForDate(
+														job,
+														date,
+													) && (
+														<div
+															className={`m-1 p-1 rounded ${getJobColor(
+																getScheduledDateDetails(
+																	job,
+																	date,
+																),
+															)}`}
+															style={{
+																fontSize:
+																	"0.8rem",
+															}}
+														>
+															<div>
+																{getScheduledDateDetails(
+																	job,
+																	date,
+																)?.crewSize && (
+																	<div>
+																		Crew:{" "}
+																		{
+																			getScheduledDateDetails(
+																				job,
+																				date,
+																			)
+																				.crewSize
+																		}
+																	</div>
+																)}
+																{getScheduledDateDetails(
+																	job,
+																	date,
+																)?.operator
+																	?.count >
+																	0 && (
+																	<div>
+																		{formatOperatorType(
+																			getScheduledDateDetails(
+																				job,
+																				date,
+																			)
+																				.operator
+																				.type,
+																		)}
+																		:{" "}
+																		{
+																			getScheduledDateDetails(
+																				job,
+																				date,
+																			)
+																				.operator
+																				.count
+																		}
+																	</div>
+																)}
+																{getScheduledDateDetails(
+																	job,
+																	date,
+																)?.otherIdentifier?.map(
+																	(
+																		identifier,
+																		idx,
+																	) =>
+																		identifier !==
+																			"NONE" && (
+																			<div
+																				key={
+																					idx
+																				}
+																				className="text-warning"
+																			>
+																				{identifier.replace(
+																					"_",
+																					" ",
+																				)}
+																			</div>
+																		),
+																)}
+															</div>
+														</div>
+													)}
+												</Col>
+											)
+										),
+									)}
 								</Row>
 							))}
 						</div>
