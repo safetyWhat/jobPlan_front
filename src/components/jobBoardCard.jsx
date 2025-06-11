@@ -8,7 +8,7 @@ const JobBoard = () => {
 	const [scheduledJobs, setScheduledJobs] = useState([]);
 	const [dates, setDates] = useState([]);
 	const [showModal, setShowModal] = useState(false);
-	const [selectedJob, setSelectedJob] = useState(null); // Add this for editing
+	//const [selectedJob, setSelectedJob] = useState(null); // Add this for editing
 
 	useEffect(() => {
 		const fetchScheduledJobs = async () => {
@@ -56,15 +56,6 @@ const JobBoard = () => {
 			return schedDate === targetDate;
 		});
 
-		console.log("isJobScheduledForDate:", {
-			job: job.job.jobName,
-			targetDate,
-			matches,
-			dates: job.scheduledDates.map(
-				(sd) => new Date(sd.date).toISOString().split("T")[0],
-			),
-		});
-
 		return matches;
 	};
 
@@ -72,7 +63,21 @@ const JobBoard = () => {
 	const handleCloseModal = () => setShowModal(false);
 
 	const handleJobScheduled = (newJob) => {
-		setScheduledJobs([...scheduledJobs, newJob]);
+		// Check if job already exists in the array
+		const existingJobIndex = scheduledJobs.findIndex(
+			(job) => job.id === newJob.id,
+		);
+
+		if (existingJobIndex !== -1) {
+			// If job exists, create a new array with the updated job
+			const updatedJobs = [...scheduledJobs];
+			updatedJobs[existingJobIndex] = newJob;
+			setScheduledJobs(updatedJobs);
+		} else {
+			// If job doesn't exist, add it to the array
+			setScheduledJobs([...scheduledJobs, newJob]);
+		}
+
 		handleCloseModal();
 	};
 
@@ -80,23 +85,9 @@ const JobBoard = () => {
 		// Format both dates to YYYY-MM-DD for consistent comparison
 		const targetDate = new Date(date).toISOString().split("T")[0];
 
-		console.log("Looking for date:", targetDate);
-		console.log(
-			"Available dates:",
-			job.scheduledDates.map(
-				(sd) => new Date(sd.date).toISOString().split("T")[0],
-			),
-		);
-
 		return job.scheduledDates.find((sd) => {
 			const scheduledDate = new Date(sd.date).toISOString().split("T")[0];
 			const matches = scheduledDate === targetDate;
-
-			console.log("Comparing:", {
-				scheduledDate,
-				targetDate,
-				matches,
-			});
 
 			return matches;
 		});
