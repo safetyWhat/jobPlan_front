@@ -39,11 +39,18 @@ const JobBoard = () => {
 	};
 
 	const handleDeleteJob = async (id) => {
-		try {
-			await scheduledJobService.deleteScheduledJob(id);
-			setScheduledJobs(scheduledJobs.filter((job) => job.id !== id));
-		} catch (error) {
-			console.error("Failed to delete job:", error);
+		// Show confirmation dialog before proceeding with deletion
+		const confirmDelete = window.confirm(
+			"Are you sure you want to delete ALL scheduled days for this job?",
+		);
+
+		if (confirmDelete) {
+			try {
+				await scheduledJobService.deleteScheduledJob(id);
+				setScheduledJobs(scheduledJobs.filter((job) => job.id !== id));
+			} catch (error) {
+				console.error("Failed to delete job:", error);
+			}
 		}
 	};
 

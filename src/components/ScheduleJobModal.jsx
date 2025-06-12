@@ -20,17 +20,44 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 		],
 	});
 
+	// Reset form data when modal is closed or opened
 	useEffect(() => {
-		const fetchJobs = async () => {
-			try {
-				const response = await axios.get(
-					`${import.meta.env.VITE_API_URL}/jobs`,
-				);
-				setJobs(response.data.data.filter((job) => job.active));
-			} catch (error) {
-				console.error("Failed to fetch jobs:", error);
-			}
-		};
+		if (show) {
+			fetchJobs();
+		} else {
+			resetFormData();
+		}
+	}, [show]);
+
+	const resetFormData = () => {
+		setFormData({
+			jobId: "",
+			dates: [
+				{
+					date: "",
+					crewSize: "",
+					otherIdentifier: ["NONE"],
+					operator: {
+						type: "NONE",
+						count: "",
+					},
+				},
+			],
+		});
+	};
+
+	const fetchJobs = async () => {
+		try {
+			const response = await axios.get(
+				`${import.meta.env.VITE_API_URL}/jobs`,
+			);
+			setJobs(response.data.data.filter((job) => job.active));
+		} catch (error) {
+			console.error("Failed to fetch jobs:", error);
+		}
+	};
+
+	useEffect(() => {
 		if (show) {
 			fetchJobs();
 		}
@@ -44,6 +71,7 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 				formData.dates,
 			);
 			onJobScheduled(response.data);
+			resetFormData(); // Reset form data after successful submission
 			handleClose();
 		} catch (error) {
 			console.error("Failed to schedule job:", error);
