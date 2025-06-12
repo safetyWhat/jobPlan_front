@@ -62,20 +62,23 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 	const handleOperatorChange = (index, field, value) => {
 		setFormData((prev) => ({
 			...prev,
-			dates: prev.dates.map((date, i) =>
-				i === index
-					? {
-							...date,
-							operator: {
-								...date.operator,
-								[field]:
-									field === "count"
-										? parseInt(value) || ""
-										: value,
-							},
-						}
-					: date,
-			),
+			dates: prev.dates.map((date, i) => {
+				if (i === index) {
+					let fieldValue = value;
+					if (field === "count") {
+						fieldValue = parseInt(value) || "";
+					}
+
+					return {
+						...date,
+						operator: {
+							...date.operator,
+							[field]: fieldValue,
+						},
+					};
+				}
+				return date;
+			}),
 		}));
 	};
 
@@ -248,21 +251,26 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 												identifier,
 											)}
 											onChange={(e) => {
-												const newIdentifiers = e.target
-													.checked
-													? [
-															...date.otherIdentifier.filter(
-																(i) =>
-																	i !==
-																	"NONE",
-															),
-															identifier,
-														]
-													: date.otherIdentifier.filter(
+												let newIdentifiers;
+
+												if (e.target.checked) {
+													// When checkbox is checked, add the identifier and remove NONE
+													newIdentifiers = [
+														...date.otherIdentifier.filter(
+															(i) => i !== "NONE",
+														),
+														identifier,
+													];
+												} else {
+													// When checkbox is unchecked, just remove this identifier
+													newIdentifiers =
+														date.otherIdentifier.filter(
 															(i) =>
 																i !==
 																identifier,
 														);
+												}
+
 												handleDateChange(
 													index,
 													"otherIdentifier",
