@@ -3,12 +3,13 @@ import { Card, Button, Row, Col, Container } from "react-bootstrap";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { scheduledJobService } from "../services/scheduledJobService";
 import ScheduleJobModal from "./ScheduleJobModal";
+import JobBoardDateRow from "./jobBoardDateRow";
+import JobBoardJobRow from "./jobBoardJobRow";
 
 const JobBoard = () => {
 	const [scheduledJobs, setScheduledJobs] = useState([]);
 	const [dates, setDates] = useState([]);
 	const [showModal, setShowModal] = useState(false);
-	//const [selectedJob, setSelectedJob] = useState(null); // Add this for editing
 
 	useEffect(() => {
 		const fetchScheduledJobs = async () => {
@@ -16,7 +17,7 @@ const JobBoard = () => {
 				const response = await scheduledJobService.getScheduledJobs();
 				setScheduledJobs(response.data);
 				console.log("Scheduled Jobs:", response.data);
-				console.log("job", response.data[0].job.jobName);
+				console.log("job", response.data[0]?.job.jobName);
 			} catch (error) {
 				console.error("Failed to fetch scheduled jobs:", error);
 			}
@@ -141,161 +142,44 @@ const JobBoard = () => {
 						}}
 					>
 						<p className="m-3 fw-bold">Job Info</p>
-						{scheduledJobs.map(
-							(job) => (
-								console.log("job", job.job.jobName),
-								(
-									<div
-										key={job.id}
-										className="m-3 d-flex justify-content-between align-items-center"
-									>
-										<span>{job.job.jobName}</span>
-										<Button
-											variant="danger"
-											size="sm"
-											onClick={() =>
-												handleDeleteJob(job.id)
-											}
-										>
-											<FaTrash />
-										</Button>
-									</div>
-								)
-							),
-						)}
+						{scheduledJobs.map((job) => (
+							<div
+								key={job.id}
+								className="m-3 d-flex justify-content-between align-items-center"
+							>
+								<span>{job.job.jobName}</span>
+								<Button
+									variant="danger"
+									size="sm"
+									onClick={() => handleDeleteJob(job.id)}
+								>
+									<FaTrash />
+								</Button>
+							</div>
+						))}
 					</div>
 
 					{/* Scrollable Dates Section */}
 					<div style={{ overflowX: "auto", flex: 1 }}>
 						<div style={{ minWidth: "max-content" }}>
-							{/* Dates header row */}
-							<Row className="mt-3">
-								{dates.map((date, index) => (
-									<Col
-										key={index}
-										className="text-center border-start"
-										style={{ minWidth: "100px" }}
-									>
-										<small>
-											{date.toLocaleDateString("en-US", {
-												month: "short",
-												day: "numeric",
-											})}
-										</small>
-									</Col>
-								))}
-							</Row>
+							{/* Dates header row - Now using component */}
+							<JobBoardDateRow dates={dates} />
 
-							{/* Job rows */}
+							{/* Job rows - Now using component */}
 							{scheduledJobs.map((job) => (
-								<Row key={job.id}>
-									{dates.map(
-										(date, index) => (
-											console.log(
-												"scheduledDates:",
-												getScheduledDateDetails(
-													job,
-													date,
-												),
-											),
-											(
-												<Col
-													key={index}
-													className="text-center border-start border-top"
-													style={{
-														minWidth: "100px",
-														height: "50px",
-													}}
-												>
-													{isJobScheduledForDate(
-														job,
-														date,
-													) && (
-														<div
-															className={`m-1 p-1 rounded ${getJobColor(
-																getScheduledDateDetails(
-																	job,
-																	date,
-																),
-															)}`}
-															style={{
-																fontSize:
-																	"0.8rem",
-															}}
-														>
-															<div>
-																{getScheduledDateDetails(
-																	job,
-																	date,
-																)?.crewSize && (
-																	<div>
-																		Crew:{" "}
-																		{
-																			getScheduledDateDetails(
-																				job,
-																				date,
-																			)
-																				.crewSize
-																		}
-																	</div>
-																)}
-																{getScheduledDateDetails(
-																	job,
-																	date,
-																)?.operator
-																	?.count >
-																	0 && (
-																	<div>
-																		{formatOperatorType(
-																			getScheduledDateDetails(
-																				job,
-																				date,
-																			)
-																				.operator
-																				.type,
-																		)}
-																		:{" "}
-																		{
-																			getScheduledDateDetails(
-																				job,
-																				date,
-																			)
-																				.operator
-																				.count
-																		}
-																	</div>
-																)}
-																{getScheduledDateDetails(
-																	job,
-																	date,
-																)?.otherIdentifier?.map(
-																	(
-																		identifier,
-																		idx,
-																	) =>
-																		identifier !==
-																			"NONE" && (
-																			<div
-																				key={
-																					idx
-																				}
-																				className="text-warning"
-																			>
-																				{identifier.replace(
-																					"_",
-																					" ",
-																				)}
-																			</div>
-																		),
-																)}
-															</div>
-														</div>
-													)}
-												</Col>
-											)
-										),
-									)}
-								</Row>
+								<JobBoardJobRow
+									key={job.id}
+									job={job}
+									dates={dates}
+									isJobScheduledForDate={
+										isJobScheduledForDate
+									}
+									getScheduledDateDetails={
+										getScheduledDateDetails
+									}
+									getJobColor={getJobColor}
+									formatOperatorType={formatOperatorType}
+								/>
 							))}
 						</div>
 					</div>
