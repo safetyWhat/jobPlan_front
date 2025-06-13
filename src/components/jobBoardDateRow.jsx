@@ -25,7 +25,8 @@ const JobBoardDateRow = ({ dates }) => {
 						isWeekend(date) ? "bg-light" : ""
 					} ${isToday(date) ? "border border-primary" : ""}`}
 					style={{
-						minWidth: "120px",
+						minWidth: "100px", // Changed to match jobBoardJobRow
+						width: "100px", // Added fixed width for consistency
 						borderRight: "1px solid #dee2e6",
 					}}
 				>

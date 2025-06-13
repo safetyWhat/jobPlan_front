@@ -9,15 +9,28 @@ const JobBoardJobRow = ({
 	getJobColor,
 	formatOperatorType,
 }) => {
+	// Helper function to convert identifiers to abbreviations
+	const getIdentifierAbbreviation = (identifier) => {
+		const abbreviations = {
+			TIME_AND_MATERIALS: "TM",
+			TEN_DAY: "10D",
+			GRINDING: "G",
+		};
+
+		return abbreviations[identifier] || identifier.replace("_", " ");
+	};
+
 	return (
-		<Row key={job.id}>
+		<div className="d-flex">
 			{dates.map((date, index) => (
-				<Col
+				<div
 					key={index}
 					className="text-center border-start border-top"
 					style={{
 						minWidth: "100px",
+						width: "100px", // Added fixed width for consistency
 						height: "50px",
+						borderRight: "1px solid #dee2e6",
 					}}
 				>
 					{isJobScheduledForDate(job, date) && (
@@ -62,18 +75,20 @@ const JobBoardJobRow = ({
 										identifier !== "NONE" && (
 											<div
 												key={idx}
-												className="text-warning"
+												className="text-info"
 											>
-												{identifier.replace("_", " ")}
+												{getIdentifierAbbreviation(
+													identifier,
+												)}
 											</div>
 										),
 								)}
 							</div>
 						</div>
 					)}
-				</Col>
+				</div>
 			))}
-		</Row>
+		</div>
 	);
 };
 
