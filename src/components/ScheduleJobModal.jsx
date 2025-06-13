@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Modal, Button, Form, Row, Col } from "react-bootstrap";
 import { scheduledJobService } from "../services/scheduledJobService";
 import axios from "axios";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 	const [jobs, setJobs] = useState([]);
@@ -57,18 +59,24 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 		}
 	};
 
-	useEffect(() => {
-		if (show) {
-			fetchJobs();
-		}
-	}, [show]);
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
+			// Convert Date objects to ISO string format before submitting
+			const formattedData = {
+				...formData,
+				dates: formData.dates.map((date) => ({
+					...date,
+					date:
+						date.date instanceof Date
+							? date.date.toISOString().split("T")[0]
+							: date.date,
+				})),
+			};
+
 			const response = await scheduledJobService.createScheduledJob(
 				parseInt(formData.jobId),
-				formData.dates,
+				formattedData.dates,
 			);
 			onJobScheduled(response.data);
 			resetFormData(); // Reset form data after successful submission
@@ -181,16 +189,22 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 								<Col md={6}>
 									<Form.Group className="mb-3">
 										<Form.Label>Date</Form.Label>
-										<Form.Control
-											type="date"
-											value={date.date}
-											onChange={(e) =>
+										<DatePicker
+											selected={
+												date.date
+													? new Date(date.date)
+													: null
+											}
+											onChange={(selectedDate) =>
 												handleDateChange(
 													index,
 													"date",
-													e.target.value,
+													selectedDate,
 												)
 											}
+											className="form-control"
+											dateFormat="yyyy-MM-dd"
+											placeholderText="Select a date"
 											required
 										/>
 									</Form.Group>
