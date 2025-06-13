@@ -28,7 +28,7 @@ const JobBoardJobRow = ({
 					className="text-center border-start border-top"
 					style={{
 						minWidth: "100px",
-						width: "100px", // Added fixed width for consistency
+						width: "100px",
 						height: "50px",
 						borderRight: "1px solid #dee2e6",
 					}}
@@ -53,20 +53,25 @@ const JobBoardJobRow = ({
 										}
 									</div>
 								)}
-								{getScheduledDateDetails(job, date)?.operator
-									?.count > 0 && (
-									<div>
-										{formatOperatorType(
-											getScheduledDateDetails(job, date)
-												.operator.type,
-										)}
-										:{" "}
-										{
-											getScheduledDateDetails(job, date)
-												.operator.count
-										}
-									</div>
-								)}
+								{/* Alternative implementation with a cleaner approach */}
+								{(() => {
+									const scheduledDate =
+										getScheduledDateDetails(job, date);
+									return (
+										scheduledDate?.operator &&
+										Array.isArray(scheduledDate.operator) &&
+										scheduledDate.operator.map((op, idx) =>
+											op.type !== "NONE" ? (
+												<div key={`operator-${idx}`}>
+													{formatOperatorType(
+														op.type,
+													)}
+													: {op.count}
+												</div>
+											) : null,
+										)
+									);
+								})()}
 								{getScheduledDateDetails(
 									job,
 									date,

@@ -155,12 +155,15 @@ const JobBoard = () => {
 	};
 
 	const getJobColor = (scheduledDate) => {
+		console.log("Scheduled operator:", scheduledDate.operator);
 		if (!scheduledDate) return "bg-primary";
 		if (scheduledDate.otherIdentifier.includes("TIME_AND_MATERIALS"))
 			return "bg-warning";
 		if (scheduledDate.otherIdentifier.includes("TEN_DAY"))
 			return "bg-danger";
-		if (scheduledDate.operator?.type !== "NONE") return "bg-success";
+		if (scheduledDate.operator[0].type !== "NONE") {
+			return "bg-success";
+		}
 		return "bg-primary";
 	};
 
