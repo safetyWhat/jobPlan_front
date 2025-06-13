@@ -1,0 +1,32 @@
+/* Custom calendar styling */
+.react-datepicker__day--highlighted-custom-range {
+  background-color: #e6f3ff;
+  border-radius: 0.3rem;
+  color: #216ba5;
+}
+
+.highlighted-date-range {
+  background-color: #e6f3ff !important;
+  border-radius: 0.3rem;
+  color: #216ba5 !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: #216ba5 !important;
+  color: white !important;
+}
+
+/* Make calendar container fill available space */
+.custom-calendar-container .react-datepicker {
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+}
+
+.custom-calendar-container .react-datepicker__month-container {
+  width: 100%;
+}
+
+.custom-calendar-container .react-datepicker__day {
+  margin: 0.2rem;
+}

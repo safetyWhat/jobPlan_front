@@ -1,42 +1,88 @@
 import React, { useState, useEffect } from "react";
-import { Card, Button, Row, Col, Container } from "react-bootstrap";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import {
+	Card,
+	Button,
+	Row,
+	Col,
+	Container,
+	Overlay,
+	Popover,
+} from "react-bootstrap";
+import { FaPlus, FaTrash, FaCalendarAlt } from "react-icons/fa";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { scheduledJobService } from "../services/scheduledJobService";
 import ScheduleJobModal from "./ScheduleJobModal";
 import JobBoardDateRow from "./jobBoardDateRow";
 import JobBoardJobRow from "./jobBoardJobRow";
+import "../styles/calendar.css";
 
 const JobBoard = () => {
 	const [scheduledJobs, setScheduledJobs] = useState([]);
 	const [dates, setDates] = useState([]);
 	const [showModal, setShowModal] = useState(false);
+	const [startDate, setStartDate] = useState(new Date());
+	const [showCalendar, setShowCalendar] = useState(false);
+	const [calendarTarget, setCalendarTarget] = useState(null);
 
 	useEffect(() => {
 		const fetchScheduledJobs = async () => {
 			try {
 				const response = await scheduledJobService.getScheduledJobs();
 				setScheduledJobs(response.data);
-				console.log("Scheduled Jobs:", response.data);
-				console.log("job", response.data[0]?.job.jobName);
 			} catch (error) {
 				console.error("Failed to fetch scheduled jobs:", error);
 			}
 		};
 
-		setDates(generateDates());
+		setDates(generateDates(startDate));
 		fetchScheduledJobs();
-	}, []);
+	}, [startDate]);
 
-	// Generate array of 21 dates starting from today. Will need to change to display from selected date.
-	const generateDates = () => {
+	// Generate array of 21 dates starting from selected start date
+	const generateDates = (start) => {
 		const dates = [];
-		const today = new Date();
 		for (let i = 0; i < 21; i++) {
-			const date = new Date(today);
-			date.setDate(today.getDate() + i);
+			const date = new Date(start);
+			date.setDate(start.getDate() + i);
 			dates.push(date);
 		}
 		return dates;
+	};
+
+	const handleDateChange = (date) => {
+		setStartDate(date);
+	};
+
+	const handleCalendarToggle = (event) => {
+		setCalendarTarget(event.target);
+		setShowCalendar(!showCalendar);
+	};
+
+	const formatDateRange = () => {
+		const endDate = new Date(startDate);
+		endDate.setDate(startDate.getDate() + 20);
+
+		const formatOptions = { month: "short", day: "numeric" };
+		const startStr = startDate.toLocaleDateString(undefined, formatOptions);
+		const endStr = endDate.toLocaleDateString(undefined, formatOptions);
+
+		return `${startStr} - ${endStr}`;
+	};
+
+	const highlightWithRanges = () => {
+		const dateRange = [];
+		for (let i = 0; i < 21; i++) {
+			const day = new Date(startDate);
+			day.setDate(startDate.getDate() + i);
+			dateRange.push(new Date(day));
+		}
+
+		return [
+			{
+				"react-datepicker__day--highlighted-custom-range": dateRange,
+			},
+		];
 	};
 
 	const handleDeleteJob = async (id) => {
@@ -123,6 +169,86 @@ const JobBoard = () => {
 			<Row>
 				<Col>
 					<h2>Job Board</h2>
+				</Col>
+				<Col className="d-flex align-items-center justify-content-center">
+					<Button
+						variant="outline-secondary"
+						onClick={handleCalendarToggle}
+						className="d-flex align-items-center"
+					>
+						<FaCalendarAlt className="me-2" />
+						<span>{formatDateRange()}</span>
+					</Button>
+
+					<Overlay
+						show={showCalendar}
+						target={calendarTarget}
+						placement="bottom"
+						container={document.body}
+						rootClose
+						onHide={() => setShowCalendar(false)}
+					>
+						<Popover
+							id="calendar-popover"
+							style={{ minWidth: "300px" }}
+						>
+							<Popover.Header as="h3">
+								Select Start Date
+							</Popover.Header>
+							<Popover.Body>
+								<div className="custom-calendar-container">
+									<DatePicker
+										selected={startDate}
+										onChange={handleDateChange}
+										inline
+										highlightDates={highlightWithRanges()}
+										dayClassName={(date) => {
+											// Get date without time
+											const currentDate = new Date(
+												date.setHours(0, 0, 0, 0),
+											);
+											const selectedStartDate = new Date(
+												startDate.setHours(0, 0, 0, 0),
+											);
+
+											// Check if date is within the 21-day range
+											const endDate = new Date(
+												selectedStartDate,
+											);
+											endDate.setDate(
+												selectedStartDate.getDate() +
+													20,
+											);
+
+											if (
+												currentDate >=
+													selectedStartDate &&
+												currentDate <= endDate
+											) {
+												return "highlighted-date-range";
+											}
+											return null;
+										}}
+									/>
+									<div className="text-muted small mb-2 mt-2">
+										Showing 21 days starting from selected
+										date
+									</div>
+									<div className="d-flex justify-content-end mt-3">
+										<Button
+											variant="primary"
+											size="sm"
+											onClick={() =>
+												setShowCalendar(false)
+											}
+										>
+											Apply
+										</Button>
+									</div>
+								</div>
+							</Popover.Body>
+						</Popover>
+					</Overlay>
 				</Col>
 				<Col className="text-end">
 					<Button variant="primary" onClick={handleShowModal}>
