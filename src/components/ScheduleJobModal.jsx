@@ -195,6 +195,13 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 		}));
 	};
 
+	const getSelectedDate = (dateValue) => {
+		if (dateValue) {
+			return new Date(dateValue);
+		}
+		return null;
+	};
+
 	return (
 		<Modal show={show} onHide={handleClose} size="lg">
 			<Modal.Header closeButton>
@@ -481,13 +488,9 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 											<Form.Group className="mb-3">
 												<Form.Label>Date</Form.Label>
 												<DatePicker
-													selected={
-														date.date
-															? new Date(
-																	date.date,
-																)
-															: null
-													}
+													selected={getSelectedDate(
+														date.date,
+													)}
 													onChange={(selectedDate) =>
 														handleDateChange(
 															index,
