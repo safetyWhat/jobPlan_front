@@ -7,6 +7,13 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 	const [jobs, setJobs] = useState([]);
+	const [isDateRange, setIsDateRange] = useState(false);
+	const [dateRange, setDateRange] = useState({
+		startDate: null,
+		endDate: null,
+	});
+	const [includeSaturday, setIncludeSaturday] = useState(false);
+	const [includeSunday, setIncludeSunday] = useState(false);
 	const [formData, setFormData] = useState({
 		jobId: "",
 		dates: [
@@ -46,6 +53,13 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 				},
 			],
 		});
+		setIsDateRange(false);
+		setDateRange({
+			startDate: null,
+			endDate: null,
+		});
+		setIncludeSaturday(false);
+		setIncludeSunday(false);
 	};
 
 	const fetchJobs = async () => {
@@ -59,13 +73,51 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 		}
 	};
 
+	// Generate array of dates between startDate and endDate, excluding weekends as configured
+	const generateDatesBetween = (start, end) => {
+		const dates = [];
+		const currentDate = new Date(start);
+		const endDate = new Date(end);
+
+		while (currentDate <= endDate) {
+			const dayOfWeek = currentDate.getDay(); // 0 is Sunday, 6 is Saturday
+
+			// Check if we should include this day
+			if (
+				(dayOfWeek !== 0 && dayOfWeek !== 6) || // Weekdays
+				(dayOfWeek === 6 && includeSaturday) || // Saturday if included
+				(dayOfWeek === 0 && includeSunday) // Sunday if included
+			) {
+				dates.push(new Date(currentDate));
+			}
+			currentDate.setDate(currentDate.getDate() + 1);
+		}
+		return dates;
+	};
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
+			let datesForSubmission = [...formData.dates];
+
+			// If using date range, replace the dates array with generated dates
+			if (isDateRange && dateRange.startDate && dateRange.endDate) {
+				const dateTemplate = formData.dates[0];
+				const datesBetween = generateDatesBetween(
+					dateRange.startDate,
+					dateRange.endDate,
+				);
+
+				datesForSubmission = datesBetween.map((date) => ({
+					...dateTemplate,
+					date: date,
+				}));
+			}
+
 			// Convert Date objects to ISO string format before submitting
 			const formattedData = {
 				...formData,
-				dates: formData.dates.map((date) => ({
+				dates: datesForSubmission.map((date) => ({
 					...date,
 					date:
 						date.date instanceof Date
@@ -172,167 +224,428 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 						</Form.Select>
 					</Form.Group>
 
-					{formData.dates.map((date, index) => (
-						<div key={index} className="border rounded p-3 mb-3">
-							<div className="d-flex justify-content-end mb-2">
-								{index > 0 && (
-									<Button
-										variant="danger"
-										size="sm"
-										onClick={() => removeDate(index)}
-									>
-										Remove Date
-									</Button>
-								)}
-							</div>
-							<Row>
+					<Form.Group className="mb-3">
+						<Form.Check
+							type="checkbox"
+							id="date-range-toggle"
+							label="Schedule multiple days using date range"
+							checked={isDateRange}
+							onChange={() => setIsDateRange(!isDateRange)}
+						/>
+					</Form.Group>
+
+					{isDateRange ? (
+						<>
+							<Row className="mb-3">
 								<Col md={6}>
-									<Form.Group className="mb-3">
-										<Form.Label>Date</Form.Label>
+									<Form.Group>
+										<Form.Label>Start Date</Form.Label>
 										<DatePicker
-											selected={
-												date.date
-													? new Date(date.date)
-													: null
-											}
-											onChange={(selectedDate) =>
-												handleDateChange(
-													index,
-													"date",
-													selectedDate,
-												)
+											selected={dateRange.startDate}
+											onChange={(date) =>
+												setDateRange((prev) => ({
+													...prev,
+													startDate: date,
+												}))
 											}
 											className="form-control"
 											dateFormat="yyyy-MM-dd"
-											placeholderText="Select a date"
+											placeholderText="Select start date"
 											required
 										/>
 									</Form.Group>
 								</Col>
 								<Col md={6}>
-									<Form.Group className="mb-3">
-										<Form.Label>Crew Size</Form.Label>
-										<Form.Control
-											type="number"
-											value={date.crewSize}
-											onChange={(e) =>
-												handleDateChange(
-													index,
-													"crewSize",
-													parseInt(e.target.value) ||
-														"",
-												)
+									<Form.Group>
+										<Form.Label>End Date</Form.Label>
+										<DatePicker
+											selected={dateRange.endDate}
+											onChange={(date) =>
+												setDateRange((prev) => ({
+													...prev,
+													endDate: date,
+												}))
 											}
+											className="form-control"
+											dateFormat="yyyy-MM-dd"
+											placeholderText="Select end date"
+											minDate={dateRange.startDate}
+											required
 										/>
 									</Form.Group>
 								</Col>
 							</Row>
-
-							<Row>
-								<Col md={6}>
-									<Form.Group className="mb-3">
-										<Form.Label>Operator Type</Form.Label>
-										<Form.Select
-											value={date.operator.type}
-											onChange={(e) =>
-												handleOperatorChange(
-													index,
-													"type",
-													e.target.value,
-												)
-											}
-										>
-											<option value="NONE">None</option>
-											<option value="FULL">Full</option>
-											<option value="BOBCAT">
-												Bobcat
-											</option>
-											<option value="DOZER">Dozer</option>
-										</Form.Select>
-									</Form.Group>
-								</Col>
-								<Col md={6}>
-									<Form.Group className="mb-3">
-										<Form.Label>Operator Count</Form.Label>
-										<Form.Control
-											type="number"
-											value={date.operator.count}
-											onChange={(e) =>
-												handleOperatorChange(
-													index,
-													"count",
-													e.target.value,
-												)
-											}
-											disabled={
-												date.operator.type === "NONE"
-											}
-										/>
-									</Form.Group>
+							<Row className="mb-3">
+								<Col>
+									<Form.Check
+										type="checkbox"
+										id="include-saturday"
+										label="Include Saturdays"
+										checked={includeSaturday}
+										onChange={() =>
+											setIncludeSaturday(!includeSaturday)
+										}
+									/>
+									<Form.Check
+										type="checkbox"
+										id="include-sunday"
+										label="Include Sundays"
+										checked={includeSunday}
+										onChange={() =>
+											setIncludeSunday(!includeSunday)
+										}
+									/>
 								</Col>
 							</Row>
-
-							<Form.Group className="mb-3">
-								<Form.Label>Other Identifiers</Form.Label>
-								<div>
-									{[
-										"NONE",
-										"TIME_AND_MATERIALS",
-										"TEN_DAY",
-										"GRINDING",
-									].map((identifier) => (
-										<Form.Check
-											key={identifier}
-											inline
-											type="checkbox"
-											label={identifier.replace(
-												/_/g,
-												" ",
-											)}
-											checked={date.otherIdentifier.includes(
-												identifier,
-											)}
-											onChange={(e) => {
-												let newIdentifiers;
-
-												if (e.target.checked) {
-													// When checkbox is checked, add the identifier and remove NONE
-													newIdentifiers = [
-														...date.otherIdentifier.filter(
-															(i) => i !== "NONE",
-														),
-														identifier,
-													];
-												} else {
-													// When checkbox is unchecked, just remove this identifier
-													newIdentifiers =
-														date.otherIdentifier.filter(
-															(i) =>
-																i !==
-																identifier,
-														);
+							<div className="border rounded p-3 mb-3">
+								<h5 className="mb-3">
+									Date Information (applies to all selected
+									dates)
+								</h5>
+								<Row>
+									<Col md={6}>
+										<Form.Group className="mb-3">
+											<Form.Label>Crew Size</Form.Label>
+											<Form.Control
+												type="number"
+												value={
+													formData.dates[0].crewSize
 												}
+												onChange={(e) =>
+													handleDateChange(
+														0,
+														"crewSize",
+														parseInt(
+															e.target.value,
+														) || "",
+													)
+												}
+											/>
+										</Form.Group>
+									</Col>
+								</Row>
 
-												handleDateChange(
-													index,
-													"otherIdentifier",
-													newIdentifiers,
-												);
-											}}
-										/>
-									))}
+								<Row>
+									<Col md={6}>
+										<Form.Group className="mb-3">
+											<Form.Label>
+												Operator Type
+											</Form.Label>
+											<Form.Select
+												value={
+													formData.dates[0].operator
+														.type
+												}
+												onChange={(e) =>
+													handleOperatorChange(
+														0,
+														"type",
+														e.target.value,
+													)
+												}
+											>
+												<option value="NONE">
+													None
+												</option>
+												<option value="FULL">
+													Full
+												</option>
+												<option value="BOBCAT">
+													Bobcat
+												</option>
+												<option value="DOZER">
+													Dozer
+												</option>
+											</Form.Select>
+										</Form.Group>
+									</Col>
+									<Col md={6}>
+										<Form.Group className="mb-3">
+											<Form.Label>
+												Operator Count
+											</Form.Label>
+											<Form.Control
+												type="number"
+												value={
+													formData.dates[0].operator
+														.count
+												}
+												onChange={(e) =>
+													handleOperatorChange(
+														0,
+														"count",
+														e.target.value,
+													)
+												}
+												disabled={
+													formData.dates[0].operator
+														.type === "NONE"
+												}
+											/>
+										</Form.Group>
+									</Col>
+								</Row>
+
+								<Form.Group className="mb-3">
+									<Form.Label>Other Identifiers</Form.Label>
+									<div>
+										{[
+											"NONE",
+											"TIME_AND_MATERIALS",
+											"TEN_DAY",
+											"GRINDING",
+										].map((identifier) => (
+											<Form.Check
+												key={identifier}
+												inline
+												type="checkbox"
+												label={identifier.replace(
+													/_/g,
+													" ",
+												)}
+												checked={formData.dates[0].otherIdentifier.includes(
+													identifier,
+												)}
+												onChange={(e) => {
+													let newIdentifiers;
+
+													if (e.target.checked) {
+														// When checkbox is checked, add the identifier and remove NONE
+														newIdentifiers = [
+															...formData.dates[0].otherIdentifier.filter(
+																(i) =>
+																	i !==
+																	"NONE",
+															),
+															identifier,
+														];
+													} else {
+														// When checkbox is unchecked, just remove this identifier
+														newIdentifiers =
+															formData.dates[0].otherIdentifier.filter(
+																(i) =>
+																	i !==
+																	identifier,
+															);
+													}
+
+													handleDateChange(
+														0,
+														"otherIdentifier",
+														newIdentifiers,
+													);
+												}}
+											/>
+										))}
+									</div>
+								</Form.Group>
+							</div>
+							{dateRange.startDate && dateRange.endDate && (
+								<div className="alert alert-info">
+									This will schedule the job for{" "}
+									{
+										generateDatesBetween(
+											dateRange.startDate,
+											dateRange.endDate,
+										).length
+									}{" "}
+									days between{" "}
+									{dateRange.startDate.toLocaleDateString()}{" "}
+									and {dateRange.endDate.toLocaleDateString()}
+									.
 								</div>
-							</Form.Group>
-						</div>
-					))}
+							)}
+						</>
+					) : (
+						<>
+							{formData.dates.map((date, index) => (
+								<div
+									key={index}
+									className="border rounded p-3 mb-3"
+								>
+									<div className="d-flex justify-content-end mb-2">
+										{index > 0 && (
+											<Button
+												variant="danger"
+												size="sm"
+												onClick={() =>
+													removeDate(index)
+												}
+											>
+												Remove Date
+											</Button>
+										)}
+									</div>
+									<Row>
+										<Col md={6}>
+											<Form.Group className="mb-3">
+												<Form.Label>Date</Form.Label>
+												<DatePicker
+													selected={
+														date.date
+															? new Date(
+																	date.date,
+																)
+															: null
+													}
+													onChange={(selectedDate) =>
+														handleDateChange(
+															index,
+															"date",
+															selectedDate,
+														)
+													}
+													className="form-control"
+													dateFormat="yyyy-MM-dd"
+													placeholderText="Select a date"
+													required
+												/>
+											</Form.Group>
+										</Col>
+										<Col md={6}>
+											<Form.Group className="mb-3">
+												<Form.Label>
+													Crew Size
+												</Form.Label>
+												<Form.Control
+													type="number"
+													value={date.crewSize}
+													onChange={(e) =>
+														handleDateChange(
+															index,
+															"crewSize",
+															parseInt(
+																e.target.value,
+															) || "",
+														)
+													}
+												/>
+											</Form.Group>
+										</Col>
+									</Row>
 
-					<Button
-						variant="secondary"
-						onClick={addDate}
-						className="mb-3"
-					>
-						Add Another Date
-					</Button>
+									<Row>
+										<Col md={6}>
+											<Form.Group className="mb-3">
+												<Form.Label>
+													Operator Type
+												</Form.Label>
+												<Form.Select
+													value={date.operator.type}
+													onChange={(e) =>
+														handleOperatorChange(
+															index,
+															"type",
+															e.target.value,
+														)
+													}
+												>
+													<option value="NONE">
+														None
+													</option>
+													<option value="FULL">
+														Full
+													</option>
+													<option value="BOBCAT">
+														Bobcat
+													</option>
+													<option value="DOZER">
+														Dozer
+													</option>
+												</Form.Select>
+											</Form.Group>
+										</Col>
+										<Col md={6}>
+											<Form.Group className="mb-3">
+												<Form.Label>
+													Operator Count
+												</Form.Label>
+												<Form.Control
+													type="number"
+													value={date.operator.count}
+													onChange={(e) =>
+														handleOperatorChange(
+															index,
+															"count",
+															e.target.value,
+														)
+													}
+													disabled={
+														date.operator.type ===
+														"NONE"
+													}
+												/>
+											</Form.Group>
+										</Col>
+									</Row>
+
+									<Form.Group className="mb-3">
+										<Form.Label>
+											Other Identifiers
+										</Form.Label>
+										<div>
+											{[
+												"NONE",
+												"TIME_AND_MATERIALS",
+												"TEN_DAY",
+												"GRINDING",
+											].map((identifier) => (
+												<Form.Check
+													key={identifier}
+													inline
+													type="checkbox"
+													label={identifier.replace(
+														/_/g,
+														" ",
+													)}
+													checked={date.otherIdentifier.includes(
+														identifier,
+													)}
+													onChange={(e) => {
+														let newIdentifiers;
+
+														if (e.target.checked) {
+															// When checkbox is checked, add the identifier and remove NONE
+															newIdentifiers = [
+																...date.otherIdentifier.filter(
+																	(i) =>
+																		i !==
+																		"NONE",
+																),
+																identifier,
+															];
+														} else {
+															// When checkbox is unchecked, just remove this identifier
+															newIdentifiers =
+																date.otherIdentifier.filter(
+																	(i) =>
+																		i !==
+																		identifier,
+																);
+														}
+
+														handleDateChange(
+															index,
+															"otherIdentifier",
+															newIdentifiers,
+														);
+													}}
+												/>
+											))}
+										</div>
+									</Form.Group>
+								</div>
+							))}
+
+							<Button
+								variant="secondary"
+								onClick={addDate}
+								className="mb-3"
+							>
+								Add Another Date
+							</Button>
+						</>
+					)}
 
 					<div className="d-flex justify-content-end">
 						<Button variant="primary" type="submit">
