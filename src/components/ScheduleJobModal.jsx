@@ -21,10 +21,12 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 				date: "",
 				crewSize: "",
 				otherIdentifier: ["NONE"],
-				operator: {
-					type: "NONE",
-					count: "",
-				},
+				operator: [
+					{
+						type: "NONE",
+						count: "",
+					},
+				],
 			},
 		],
 	});
@@ -46,10 +48,12 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 					date: "",
 					crewSize: "",
 					otherIdentifier: ["NONE"],
-					operator: {
-						type: "NONE",
-						count: "",
-					},
+					operator: [
+						{
+							type: "NONE",
+							count: "",
+						},
+					],
 				},
 			],
 		});
@@ -147,22 +151,63 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 		}));
 	};
 
-	const handleOperatorChange = (index, field, value) => {
+	const handleOperatorChange = (dateIndex, operatorIndex, field, value) => {
 		setFormData((prev) => ({
 			...prev,
 			dates: prev.dates.map((date, i) => {
-				if (i === index) {
-					let fieldValue = value;
+				if (i === dateIndex) {
+					const updatedOperators = [...date.operator];
+
 					if (field === "count") {
-						fieldValue = parseInt(value) || "";
+						value = parseInt(value) || "";
 					}
+
+					updatedOperators[operatorIndex] = {
+						...updatedOperators[operatorIndex],
+						[field]: value,
+					};
 
 					return {
 						...date,
-						operator: {
+						operator: updatedOperators,
+					};
+				}
+				return date;
+			}),
+		}));
+	};
+
+	const addOperator = (dateIndex) => {
+		setFormData((prev) => ({
+			...prev,
+			dates: prev.dates.map((date, i) => {
+				if (i === dateIndex) {
+					return {
+						...date,
+						operator: [
 							...date.operator,
-							[field]: fieldValue,
-						},
+							{
+								type: "NONE",
+								count: "",
+							},
+						],
+					};
+				}
+				return date;
+			}),
+		}));
+	};
+
+	const removeOperator = (dateIndex, operatorIndex) => {
+		setFormData((prev) => ({
+			...prev,
+			dates: prev.dates.map((date, i) => {
+				if (i === dateIndex && date.operator.length > 1) {
+					return {
+						...date,
+						operator: date.operator.filter(
+							(_, j) => j !== operatorIndex,
+						),
 					};
 				}
 				return date;
@@ -179,10 +224,12 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 					date: "",
 					crewSize: "",
 					otherIdentifier: ["NONE"],
-					operator: {
-						type: "NONE",
-						count: "",
-					},
+					operator: [
+						{
+							type: "NONE",
+							count: "",
+						},
+					],
 				},
 			],
 		}));
@@ -200,6 +247,85 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 			return new Date(dateValue);
 		}
 		return null;
+	};
+
+	// Update the render part for operators in the date range section
+	const renderOperatorsSection = (dateIndex) => {
+		return (
+			<>
+				{formData.dates[dateIndex].operator.map((op, opIndex) => (
+					<Row key={opIndex} className="mb-2">
+						<Col md={5}>
+							<Form.Group className="mb-2">
+								<Form.Label>
+									{opIndex === 0 ? "Operator Type" : ""}
+								</Form.Label>
+								<Form.Select
+									value={op.type}
+									onChange={(e) =>
+										handleOperatorChange(
+											dateIndex,
+											opIndex,
+											"type",
+											e.target.value,
+										)
+									}
+								>
+									<option value="NONE">None</option>
+									<option value="FULL">Full</option>
+									<option value="BOBCAT">Bobcat</option>
+									<option value="DOZER">Dozer</option>
+								</Form.Select>
+							</Form.Group>
+						</Col>
+						<Col md={5}>
+							<Form.Group className="mb-2">
+								<Form.Label>
+									{opIndex === 0 ? "Operator Count" : ""}
+								</Form.Label>
+								<Form.Control
+									type="number"
+									value={op.count}
+									onChange={(e) =>
+										handleOperatorChange(
+											dateIndex,
+											opIndex,
+											"count",
+											e.target.value,
+										)
+									}
+									disabled={op.type === "NONE"}
+								/>
+							</Form.Group>
+						</Col>
+						<Col
+							md={2}
+							className={`${opIndex === 0 ? "d-flex align-items-end" : ""} mb-2`}
+						>
+							{formData.dates[dateIndex].operator.length > 1 && (
+								<Button
+									variant="danger"
+									size="sm"
+									onClick={() =>
+										removeOperator(dateIndex, opIndex)
+									}
+								>
+									Remove
+								</Button>
+							)}
+						</Col>
+					</Row>
+				))}
+				<Button
+					variant="secondary"
+					size="sm"
+					onClick={() => addOperator(dateIndex)}
+					className="mb-3"
+				>
+					Add Operator
+				</Button>
+			</>
+		);
 	};
 
 	return (
@@ -332,120 +458,72 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 									</Col>
 								</Row>
 
+								{renderOperatorsSection(0)}
+
 								<Row>
 									<Col md={6}>
 										<Form.Group className="mb-3">
 											<Form.Label>
-												Operator Type
+												Other Identifiers
 											</Form.Label>
-											<Form.Select
-												value={
-													formData.dates[0].operator
-														.type
-												}
-												onChange={(e) =>
-													handleOperatorChange(
-														0,
-														"type",
-														e.target.value,
-													)
-												}
-											>
-												<option value="NONE">
-													None
-												</option>
-												<option value="FULL">
-													Full
-												</option>
-												<option value="BOBCAT">
-													Bobcat
-												</option>
-												<option value="DOZER">
-													Dozer
-												</option>
-											</Form.Select>
-										</Form.Group>
-									</Col>
-									<Col md={6}>
-										<Form.Group className="mb-3">
-											<Form.Label>
-												Operator Count
-											</Form.Label>
-											<Form.Control
-												type="number"
-												value={
-													formData.dates[0].operator
-														.count
-												}
-												onChange={(e) =>
-													handleOperatorChange(
-														0,
-														"count",
-														e.target.value,
-													)
-												}
-												disabled={
-													formData.dates[0].operator
-														.type === "NONE"
-												}
-											/>
+											<div>
+												{[
+													"NONE",
+													"TIME_AND_MATERIALS",
+													"TEN_DAY",
+													"GRINDING",
+												].map((identifier) => (
+													<Form.Check
+														key={identifier}
+														inline
+														type="checkbox"
+														label={identifier.replace(
+															/_/g,
+															" ",
+														)}
+														checked={formData.dates[0].otherIdentifier.includes(
+															identifier,
+														)}
+														onChange={(e) => {
+															let newIdentifiers;
+
+															if (
+																e.target.checked
+															) {
+																// When checkbox is checked, add the identifier and remove NONE
+																newIdentifiers =
+																	[
+																		...formData.dates[0].otherIdentifier.filter(
+																			(
+																				i,
+																			) =>
+																				i !==
+																				"NONE",
+																		),
+																		identifier,
+																	];
+															} else {
+																// When checkbox is unchecked, just remove this identifier
+																newIdentifiers =
+																	formData.dates[0].otherIdentifier.filter(
+																		(i) =>
+																			i !==
+																			identifier,
+																	);
+															}
+
+															handleDateChange(
+																0,
+																"otherIdentifier",
+																newIdentifiers,
+															);
+														}}
+													/>
+												))}
+											</div>
 										</Form.Group>
 									</Col>
 								</Row>
-
-								<Form.Group className="mb-3">
-									<Form.Label>Other Identifiers</Form.Label>
-									<div>
-										{[
-											"NONE",
-											"TIME_AND_MATERIALS",
-											"TEN_DAY",
-											"GRINDING",
-										].map((identifier) => (
-											<Form.Check
-												key={identifier}
-												inline
-												type="checkbox"
-												label={identifier.replace(
-													/_/g,
-													" ",
-												)}
-												checked={formData.dates[0].otherIdentifier.includes(
-													identifier,
-												)}
-												onChange={(e) => {
-													let newIdentifiers;
-
-													if (e.target.checked) {
-														// When checkbox is checked, add the identifier and remove NONE
-														newIdentifiers = [
-															...formData.dates[0].otherIdentifier.filter(
-																(i) =>
-																	i !==
-																	"NONE",
-															),
-															identifier,
-														];
-													} else {
-														// When checkbox is unchecked, just remove this identifier
-														newIdentifiers =
-															formData.dates[0].otherIdentifier.filter(
-																(i) =>
-																	i !==
-																	identifier,
-															);
-													}
-
-													handleDateChange(
-														0,
-														"otherIdentifier",
-														newIdentifiers,
-													);
-												}}
-											/>
-										))}
-									</div>
-								</Form.Group>
 							</div>
 							{dateRange.startDate && dateRange.endDate && (
 								<div className="alert alert-info">
@@ -527,60 +605,7 @@ const ScheduleJobModal = ({ show, handleClose, onJobScheduled }) => {
 										</Col>
 									</Row>
 
-									<Row>
-										<Col md={6}>
-											<Form.Group className="mb-3">
-												<Form.Label>
-													Operator Type
-												</Form.Label>
-												<Form.Select
-													value={date.operator.type}
-													onChange={(e) =>
-														handleOperatorChange(
-															index,
-															"type",
-															e.target.value,
-														)
-													}
-												>
-													<option value="NONE">
-														None
-													</option>
-													<option value="FULL">
-														Full
-													</option>
-													<option value="BOBCAT">
-														Bobcat
-													</option>
-													<option value="DOZER">
-														Dozer
-													</option>
-												</Form.Select>
-											</Form.Group>
-										</Col>
-										<Col md={6}>
-											<Form.Group className="mb-3">
-												<Form.Label>
-													Operator Count
-												</Form.Label>
-												<Form.Control
-													type="number"
-													value={date.operator.count}
-													onChange={(e) =>
-														handleOperatorChange(
-															index,
-															"count",
-															e.target.value,
-														)
-													}
-													disabled={
-														date.operator.type ===
-														"NONE"
-													}
-												/>
-											</Form.Group>
-										</Col>
-									</Row>
+									{renderOperatorsSection(index)}
 
 									<Form.Group className="mb-3">
 										<Form.Label>

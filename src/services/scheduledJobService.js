@@ -3,19 +3,31 @@ import axios from "axios";
 export const scheduledJobService = {
 	createScheduledJob: async (jobId, dates) => {
 		const formattedDates = dates.map((date) => {
-			let operatorValue = undefined;
+			// Convert single operator object to array
+			let operatorArray = [];
 			if (date.operator) {
-				operatorValue = {
-					type: date.operator.type || "NONE",
-					count: date.operator.count || null,
-				};
+				if (!Array.isArray(date.operator)) {
+					// If it's a single operator object, convert to array
+					operatorArray = [
+						{
+							type: date.operator.type || "NONE",
+							count: date.operator.count || null,
+						},
+					];
+				} else {
+					// If it's already an array, format each entry
+					operatorArray = date.operator.map((op) => ({
+						type: op.type || "NONE",
+						count: op.count || null,
+					}));
+				}
 			}
 
 			return {
 				date: date.date,
 				crewSize: date.crewSize || null,
 				otherIdentifier: date.otherIdentifier || ["NONE"],
-				operator: operatorValue,
+				operator: operatorArray,
 			};
 		});
 
@@ -42,19 +54,31 @@ export const scheduledJobService = {
 
 	updateScheduledJob: async (id, dates) => {
 		const formattedDates = dates.map((date) => {
-			let operatorValue = undefined;
+			// Convert single operator object to array
+			let operatorArray = [];
 			if (date.operator) {
-				operatorValue = {
-					type: date.operator.type || "NONE",
-					count: date.operator.count || null,
-				};
+				if (!Array.isArray(date.operator)) {
+					// If it's a single operator object, convert to array
+					operatorArray = [
+						{
+							type: date.operator.type || "NONE",
+							count: date.operator.count || null,
+						},
+					];
+				} else {
+					// If it's already an array, format each entry
+					operatorArray = date.operator.map((op) => ({
+						type: op.type || "NONE",
+						count: op.count || null,
+					}));
+				}
 			}
 
 			return {
 				date: date.date,
 				crewSize: date.crewSize || null,
 				otherIdentifier: date.otherIdentifier || ["NONE"],
-				operator: operatorValue,
+				operator: operatorArray,
 			};
 		});
 
